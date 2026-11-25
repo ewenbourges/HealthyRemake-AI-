@@ -15,3 +15,5 @@ Tout tient dans un seul fichier `index.html` (HTML, CSS et JavaScript), sans ser
 ## En ligne
 
 https://ewenbourges.github.io/HealthyRemake-AI-/
+
+Dernière mise à jour : 25 novembre 2026
