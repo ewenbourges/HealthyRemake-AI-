@@ -457,8 +457,8 @@ input[type=range]::-moz-range-track{background:transparent}
 /* Sheet */
 .sheet-bg{position:absolute;inset:0;background:rgba(22,37,30,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
 .sheet-bg.open{opacity:1;pointer-events:auto}
-.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--bg);border-radius:30px 30px 0 0;padding:12px 22px 28px;transform:translateY(105%);transition:transform .45s var(--ease);box-shadow:0 -20px 40px -20px rgba(0,0,0,.25)}
-.sheet.open{transform:none}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;background:var(--bg);border-radius:30px 30px 0 0;padding:12px 22px 28px;transform:translateY(105%);visibility:hidden;transition:transform .45s var(--ease),visibility 0s linear .45s;box-shadow:0 -20px 40px -20px rgba(0,0,0,.25)}
+.sheet.open{transform:none;visibility:visible;transition-delay:0s}
 .sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 16px}
 .sheet h4{font-family:var(--display);font-size:22px;font-weight:600}
 .sheet p{font-size:13.5px;color:var(--muted);margin:4px 0 16px}
@@ -650,6 +650,46 @@ body.booting .side{opacity:0;transform:translateY(14px)}
 .vskel .l.s{width:45%;margin-top:-4px}
 @keyframes shimmer{to{background-position:-150% 0}}
 .sheet-tall{max-height:88%;overflow-y:auto}
+/* Analyse IA réelle */
+.icon-btn[hidden],.slider-card[hidden],.ai-card[hidden]{display:none!important}
+.ai-btn{position:relative;color:var(--emerald-d)}
+.ai-btn .dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--muted);border:2px solid var(--card);transition:background .2s}
+.ai-btn.on .dot{background:#22C55E}
+.ai-card{margin:0 22px 16px;background:var(--card);border:1.5px solid var(--pastel);border-radius:22px;padding:16px;box-shadow:0 10px 26px -18px rgba(14,159,110,.45)}
+.ai-card.warn{border-color:rgba(243,181,74,.55);background:linear-gradient(135deg,rgba(243,181,74,.10),transparent)}
+.ai-top{display:flex;align-items:center;gap:10px}
+.ai-badge{font-size:11.5px;font-weight:800;letter-spacing:.02em;color:var(--emerald-d);background:var(--pastel-2);border-radius:99px;padding:5px 10px;white-space:nowrap}
+.ai-card.warn .ai-badge{color:#B7791F;background:rgba(243,181,74,.16)}
+.ai-conf{flex:1;height:7px;border-radius:9px;background:var(--line);overflow:hidden}
+.ai-conf i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--mint),var(--emerald))}
+.ai-pct{font-size:13px;color:var(--ink)}
+.ai-dish{display:flex;gap:12px;align-items:center;margin-top:12px}
+.ai-dish .e{width:46px;height:46px;border-radius:14px;background:var(--pastel-2);display:grid;place-items:center;font-size:24px;flex:none}
+.ai-dish b{display:block;font-family:var(--display);font-size:17px;font-weight:800;color:var(--ink)}
+.ai-dish span{font-size:12.5px;color:var(--muted);font-weight:600}
+.ai-ings{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ai-ings span{font-size:12px;font-weight:700;color:var(--ink-2);background:var(--bg-2);border:1px solid var(--line);border-radius:99px;padding:5px 10px}
+.ai-line{font-size:13px;color:var(--ink-2);font-weight:600;margin:12px 0 0;line-height:1.45}
+.ai-model{font-size:11px;color:var(--muted);margin-top:8px}
+.ai-card .link-btn{margin-top:6px;font-size:13px}
+.ai-status{font-size:13px;font-weight:700;border-radius:14px;padding:11px 13px;margin-bottom:14px;background:var(--bg-2);color:var(--ink-2);border:1px solid var(--line)}
+.ai-status.ok{background:var(--pastel-2);color:var(--emerald-d);border-color:var(--pastel)}
+.ai-status.bad{background:rgba(240,138,108,.12);color:#C2410C;border-color:rgba(240,138,108,.35)}
+.ai-field{display:block;margin-bottom:12px}
+.ai-field span{display:block;font-size:12.5px;font-weight:800;color:var(--ink-2);margin:0 0 6px 2px}
+.ai-field span i{font-style:normal;font-weight:600;color:var(--muted)}
+.ai-field input{width:100%;height:50px;border-radius:15px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:14px;padding:0 14px;outline:0;transition:border-color .2s, box-shadow .2s}
+.ai-field input:focus{border-color:var(--emerald);box-shadow:0 0 0 4px var(--pastel-2)}
+.ai-toggle{display:flex;align-items:center;gap:12px;margin:4px 0 16px;cursor:pointer}
+.ai-toggle input{position:absolute;opacity:0;pointer-events:none}
+.ai-toggle .sw{width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.ai-toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .2s}
+.ai-toggle input:checked + .sw{background:var(--emerald)}
+.ai-toggle input:checked + .sw::after{transform:translateX(18px)}
+.ai-toggle input:focus-visible + .sw{box-shadow:0 0 0 4px var(--pastel)}
+.ai-toggle b{font-size:14px;color:var(--ink)}
+.ai-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ai-actions .btn{width:100%}
 .creator-list{display:grid;gap:8px;margin-bottom:14px}
 .crow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
 .crow .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;flex:none}
@@ -1007,7 +1047,7 @@ Splash.boot();
     <h2>Le goût que tu aimes,<br><em>les macros</em> que tu veux.</h2>
     <p>Prends en photo ton plat préféré : notre IA le reconstruit en recette saine, gourmande et adaptée à ton objectif.</p>
     <div class="side-feats">
-      <div class="side-feat"><span class="ic">📷</span><div><b>Scan caméra en direct</b><span>Vise ton plat avec ton smartphone</span></div></div>
+      <div class="side-feat"><span class="ic">📷</span><div><b>Scan caméra + vraie IA</b><span>Vise ton plat, l'IA le reconnaît</span></div></div>
       <div class="side-feat"><span class="ic">🍟</span><div><b>125 plats revisités</b><span>Fast-foods, plats du monde, desserts, boissons…</span></div></div>
       <div class="side-feat"><span class="ic">🎚️</span><div><b>4 niveaux de transformation</b><span>Du plus fidèle au plus protéiné</span></div></div>
       <div class="side-feat"><span class="ic">🎬</span><div><b>Vidéos de créateurs healthy</b><span>Mises à jour à chaque nouvelle vidéo</span></div></div>
@@ -1084,7 +1124,7 @@ Splash.boot();
         <div class="topbar">
           <button class="icon-btn" data-action="back" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
           <div class="step-dots"><i class="on"></i><i></i><i></i></div>
-          <span style="width:44px"></span>
+          <button class="icon-btn ai-btn" id="aiBtn" data-action="aiSettings" aria-label="Réglages de l'analyse IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8L20 10l-5 3.9L16.5 20 12 16.6 7.5 20 9 13.9 4 10l6.1-1.2Z"/></svg><i class="dot"></i></button>
         </div>
         <div class="screen-head reveal">
           <h2>Montre-nous ton plat</h2>
@@ -1179,6 +1219,8 @@ Splash.boot();
             <p id="resDesc">—</p>
           </div>
         </div>
+
+        <div class="ai-card" id="aiCard" hidden></div>
 
         <div class="card slider-card">
           <div class="slider-top"><b>Niveau de transformation</b><span class="level-pill" id="levelPill">Équilibré</span></div>
@@ -1348,6 +1390,18 @@ Splash.boot();
         <button class="link-btn" data-action="vidRestore">Rétablir les suggestions</button>
         <button class="btn btn-ghost" data-action="closeSheet" style="width:auto;padding:12px 20px">Fermer</button>
       </div>
+    </div>
+
+    <div class="sheet sheet-tall" id="aiSheet" role="dialog" aria-label="Réglages de l'analyse IA">
+      <div class="grab"></div>
+      <h4>Analyse IA réelle</h4>
+      <p>Relie l'app à ton serveur IA gratuit (Cloudflare Workers AI) pour qu'elle reconnaisse vraiment tes plats. Sans serveur, l'analyse reste simulée.</p>
+      <div class="ai-status" id="aiStatus"></div>
+      <label class="ai-field"><span>Adresse du serveur</span><input id="aiUrl" type="url" inputmode="url" placeholder="https://healthyremake-ai.ton-nom.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+      <label class="ai-field"><span>Code d'accès <i>· facultatif</i></span><input id="aiCode" type="password" placeholder="Seulement si tu en as créé un" autocomplete="off"></label>
+      <label class="ai-toggle"><input type="checkbox" id="aiOn" checked><span class="sw"></span><b>Utiliser l'IA réelle pour mes photos</b></label>
+      <div class="ai-actions"><button class="btn btn-ghost" data-action="aiTest">Tester</button><button class="btn btn-primary" data-action="aiSave">Enregistrer</button></div>
+      <p class="fx-note" style="margin-top:14px">Guide d'installation (gratuit, environ 10 minutes) : dossier « serveur-ia » de ton dépôt GitHub. Tes photos sont envoyées à ton serveur uniquement pour l'analyse.</p>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -4460,6 +4514,7 @@ function setImg(img, src){ img.style.display=''; img.parentNode.classList.remove
 function go(id, {back=false, push=true}={}){
   if(id === state.screen) return;
   if(state.screen === 's-camera') stopCamera();
+  if(state.screen === 's-loading') state.loadToken++;   // quitter le chargement annule l'analyse en cours
   if(push && !back) state.history.push(state.screen);
   updateNav(id);
   const cur = $('#'+state.screen), nxt = $('#'+id);
@@ -4610,7 +4665,7 @@ function renderHints(){
   const opts = [['auto','✨','Auto']].concat(keys.map(k=>[k, DISHES[k].emoji, DISHES[k].name])).concat([['more','🔎','Autre plat…']]);
   $('#hintChips').innerHTML = opts.map(([k,e,n])=>`<button class="chip ${state.hint===k?'on':''}" data-action="hint" data-key="${k}">${e} ${n}</button>`).join('');
   $('#hintNote').textContent = state.hint==='auto'
-    ? "Mode auto : l'IA identifie le plat à partir de la photo."
+    ? (AI.on ? "Mode auto : l'IA réelle reconnaît ton plat sur la photo." : "Mode auto : analyse simulée. Touche ✦ en haut à droite pour brancher l'IA réelle.")
     : `L'IA transformera ton plat en partant d'un ${DISHES[state.hint].name.toLowerCase()}.`;
   const on = $('#hintChips .chip.on'), box = $('#hintChips');
   if(on && box) box.scrollLeft = on.offsetLeft - box.clientWidth/2 + on.clientWidth/2;
@@ -4656,6 +4711,191 @@ function detectDish(name){
 }
 
 /* =========================================================
+   Vraie analyse IA — serveur gratuit Cloudflare Workers AI
+   (code du serveur et guide : dossier « serveur-ia » du dépôt)
+   ========================================================= */
+const AI_DEFAULT_URL = '';   // facultatif : colle ici l'adresse de ton serveur pour l'activer sur tous tes appareils
+const AI = {
+  get cfg(){ try{ return JSON.parse(localStorage.getItem('hr-ai') || '{}') || {}; }catch(_){ return {}; } },
+  get url(){ return String(this.cfg.url || AI_DEFAULT_URL || '').trim().replace(/\/+$/, ''); },
+  get code(){ return String(this.cfg.code || ''); },
+  get on(){ return !!this.url && this.cfg.enabled !== false; },
+  save(c){ try{ localStorage.setItem('hr-ai', JSON.stringify({ ...this.cfg, ...c })); }catch(_){} }
+};
+const aiErr = (code, msg) => Object.assign(new Error(msg || code), { code });
+const aiText = (s, n = 400) => String(s == null ? '' : s).replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+const aiEmoji = s => String(s || '').replace(/[<>"'&\s]/g, '').slice(0, 8);
+
+// Réduit la photo (640 px, JPEG) : envoi rapide et moins de quota consommé
+function compressPhoto(src, max = 640){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    if(!/^data:/.test(src)) img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try{
+        const s = Math.min(1, max / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
+        const w = Math.max(1, Math.round((img.naturalWidth || 1) * s)), h = Math.max(1, Math.round((img.naturalHeight || 1) * s));
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', .8));
+      }catch(_){ reject(aiErr('photo')); }
+    };
+    img.onerror = () => reject(aiErr('photo'));
+    img.src = src;
+  });
+}
+
+async function aiAnalyze(src){
+  const image = await compressPhoto(src);
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 60000);
+  try{
+    const res = await fetch(AI.url, {
+      method:'POST', signal: ctrl.signal,
+      headers:{ 'Content-Type':'application/json', ...(AI.code ? { 'X-Access-Code': AI.code } : {}) },
+      body: JSON.stringify({ image, dishes: LIB_ORDER.map(k => `${k}=${DISHES[k].name}`) })
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || !data.ok || !data.result) throw aiErr(data.error || ('http' + res.status), data.detail);
+    return { ...data.result, model: data.model || 'IA' };
+  }catch(e){
+    if(e && e.name === 'AbortError') throw aiErr('timeout');
+    if(e && e.name === 'TypeError') throw aiErr('network');
+    throw e;
+  }finally{ clearTimeout(timer); }
+}
+
+// Analyse → décision : plat de l'app, plat inconnu (recette générée), pas de plat, ou panne
+async function runAI(){
+  try{
+    const a = await aiAnalyze(state.photo);
+    a.detected = (a.detected || []).map(x => aiText(x, 40)).filter(Boolean);
+    a.dish = aiText(a.dish, 80); a.portion = aiText(a.portion, 90); a.emoji = aiEmoji(a.emoji);
+    a.confidence = Math.max(0, Math.min(100, Math.round(+a.confidence || 0)));
+    if(!a.is_food) return { type:'notfood', ai:a };
+    if(a.match && DISHES[a.match] && a.match !== '__ai') return { type:'match', key:a.match, ai:a };
+    if(a.healthy && (a.healthy.ing || []).length >= 2) return { type:'custom', ai:a };
+    return { type:'near', key: detectDish(a.dish) || detectDish(state.fileName) || 'burger', ai:a };
+  }catch(err){ return { type:'error', err }; }
+}
+
+// Plat absent de l'app : on fabrique une fiche à partir de la recette écrite par l'IA
+function buildAiDish(a){
+  const h = a.healthy, o = a.original || {};
+  const m = x => ({ p: Math.max(1, Math.round(+x.p || 0)), c: Math.max(1, Math.round(+x.c || 0)), f: Math.max(1, Math.round(+x.f || 0)) });
+  let H = m(h), O = m(o);
+  if(!(+o.p || +o.c || +o.f)) O = { p: Math.round(H.p * .85), c: Math.round(H.c * 1.6), f: Math.round(H.f * 2) };
+  if(kc(H.p, H.c, H.f) >= kc(O.p, O.c, O.f)) H = { p: Math.max(H.p, O.p), c: Math.round(O.c * .65), f: Math.round(O.f * .5) };
+  const t = s => aiText(s), lvl = {
+    name: t(h.name) || `${a.dish}, version healthy`, img:'data:,',
+    desc: t(h.desc) || "Version healthy imaginée par l'IA à partir de ta photo.",
+    kcal: kc(H.p, H.c, H.f), p: H.p, c: H.c, f: H.f,
+    time: t(h.time) || '25 min', diff: t(h.diff) || 'Facile', serv: t(h.serv) || '1 pers.',
+    ing: h.ing.map(([e, n, q]) => [aiEmoji(e) || '🥄', t(n), t(q)]),
+    steps: (h.steps || []).map(([ti, p, tm], i) => [t(ti) || `Étape ${i + 1}`, t(p), t(tm) || '5 min']),
+    swaps: (h.swaps || []).length ? h.swaps.map(([x, y]) => [t(x), t(y)]) : [['Recette d\'origine', 'Version allégée par l\'IA']],
+    tip: t(h.tip) || 'Goûte et ajuste l\'assaisonnement avant de servir.'
+  };
+  DISHES.__ai = { name: a.dish || 'Ton plat', emoji: a.emoji || '🍽️', cat:'ai', keywords:[], origImg: state.photo || 'data:,',
+    estimate:true, aiOnly:true, original:{ p:O.p, c:O.c, f:O.f, kcal: kc(O.p, O.c, O.f), label: a.dish || 'Ton plat' }, levels:[lvl, lvl, lvl, lvl] };
+}
+
+function aiErrorText(err){
+  const c = err && err.code;
+  return ({
+    quota:   "Le quota gratuit du jour est épuisé. Il se recharge à minuit UTC (1 h du matin en France l'hiver, 2 h l'été).",
+    code:    "Code d'accès incorrect : vérifie-le dans les réglages IA.",
+    origin:  "Le serveur refuse l'adresse de l'app : ajoute-la dans ALLOWED_ORIGINS du serveur.",
+    binding: "Le serveur n'est pas relié à Workers AI : ajoute le binding « AI » dans ses réglages.",
+    timeout: "L'IA a mis trop de temps à répondre.",
+    network: "Impossible de joindre le serveur IA : vérifie l'adresse et ta connexion.",
+    photo:   "La photo n'a pas pu être préparée pour l'IA.",
+    size:    "La photo est trop lourde pour le serveur."
+  })[c] || "L'IA n'a pas pu analyser la photo" + (err && err.message && err.message !== c ? ' : ' + aiText(err.message, 140) : '.');
+}
+
+function applyAiOutcome(o){
+  state.ai = null; state.aiNote = null;
+  if(o.type === 'notfood'){ goBack(); setTimeout(() => toast("🤔 L'IA ne voit pas de plat sur cette photo"), 350); return; }
+  if(o.type === 'error'){
+    state.dish = detectDish(state.fileName) || 'burger'; state.aiNote = aiErrorText(o.err);
+    showResult(); setTimeout(() => toast('⚠️ IA indisponible : analyse simulée'), 500); return;
+  }
+  if(o.type === 'custom'){ buildAiDish(o.ai); state.dish = '__ai'; }
+  else state.dish = o.key;
+  state.ai = o.ai;
+  showResult();
+}
+
+function renderAiCard(){
+  const box = $('#aiCard');
+  const show = state.source === 'scan' && !!(state.ai || state.aiNote);
+  box.hidden = !show;
+  if(!show) return;
+  if(!state.ai){
+    box.className = 'ai-card warn';
+    box.innerHTML = `<div class="ai-top"><span class="ai-badge">⚠️ Analyse simulée</span></div><p class="ai-line">${esc(state.aiNote)}</p><button class="link-btn" data-action="aiSettings">Vérifier les réglages IA</button>`;
+    return;
+  }
+  const a = state.ai, d = DISHES[state.dish];
+  const line = state.dish === '__ai' ? "Ce plat n'est pas dans l'app : l'IA a imaginé sa version healthy."
+    : a.match === state.dish ? `Recette healthy de l'app : ${d.name}.` : `Recette healthy la plus proche dans l'app : ${d.name}.`;
+  box.className = 'ai-card';
+  box.innerHTML = `
+    <div class="ai-top"><span class="ai-badge">🤖 Analyse IA réelle</span><span class="ai-conf" title="Confiance"><i style="width:${a.confidence}%"></i></span><b class="ai-pct">${a.confidence} %</b></div>
+    <div class="ai-dish"><span class="e">${esc(a.emoji || '🍽️')}</span><div><b>${esc(a.dish || 'Plat')}</b><span>${esc(a.portion || 'Portion estimée')}${a.original && a.original.kcal ? ` · ≈ ${a.original.kcal} kcal` : ''}</span></div></div>
+    ${a.detected.length ? `<div class="ai-ings">${a.detected.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : ''}
+    <p class="ai-line">${esc(line)}</p>
+    <div class="ai-model">${esc(a.model)} · valeurs estimées à partir de la photo</div>`;
+}
+
+/* ---------- Réglages de l'IA ---------- */
+function refreshAiUI(){
+  const btn = $('#aiBtn'); if(btn) btn.classList.toggle('on', AI.on);
+}
+function setAiStatus(kind, text){ const s = $('#aiStatus'); s.className = 'ai-status ' + kind; s.textContent = text; }
+function openAiSheet(){
+  const c = AI.cfg;
+  $('#aiUrl').value = c.url || AI_DEFAULT_URL || '';
+  $('#aiCode').value = c.code || '';
+  $('#aiOn').checked = c.enabled !== false;
+  if(AI.on) setAiStatus('ok', '● IA réelle activée : tes photos sont analysées par ton serveur.');
+  else if(AI.url) setAiStatus('idle', '○ IA réelle en pause : l\'analyse reste simulée.');
+  else setAiStatus('idle', '○ Aucun serveur relié : l\'analyse est simulée.');
+  openPanel('aiSheet');
+}
+function aiFormUrl(){
+  const v = $('#aiUrl').value.trim().replace(/\/+$/, '');
+  if(!v) return '';
+  const u = /^https?:\/\//i.test(v) ? v : 'https://' + v;
+  try{ new URL(u); return u; }catch(_){ return null; }
+}
+async function testAiServer(){
+  const url = aiFormUrl();
+  if(!url){ setAiStatus('bad', url === '' ? 'Colle d\'abord l\'adresse de ton serveur.' : 'Adresse invalide.'); return false; }
+  setAiStatus('idle', 'Test en cours…');
+  try{
+    const code = $('#aiCode').value.trim();
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 12000);
+    const res = await fetch(url, { headers: code ? { 'X-Access-Code': code } : {}, signal: ctrl.signal });
+    clearTimeout(timer);
+    const d = await res.json().catch(() => ({}));
+    if(d.service !== 'healthyremake-ai'){ setAiStatus('bad', "Cette adresse ne répond pas comme le serveur HealthyRemake."); return false; }
+    if(!d.ready){ setAiStatus('bad', 'Serveur trouvé, mais le binding Workers AI « AI » manque dans ses réglages.'); return false; }
+    if(d.protected && !d.code_ok){ setAiStatus('bad', 'Serveur protégé : le code d\'accès est manquant ou incorrect.'); return false; }
+    setAiStatus('ok', `✓ Serveur prêt (${(d.models || ['IA'])[0]}). Enregistre pour l'activer.`); return true;
+  }catch(e){
+    setAiStatus('bad', 'Serveur injoignable : vérifie l\'adresse (elle finit souvent par .workers.dev).'); return false;
+  }
+}
+function saveAiSettings(){
+  const url = aiFormUrl();
+  if(url === null){ setAiStatus('bad', 'Adresse invalide.'); return; }
+  AI.save({ url, code: $('#aiCode').value.trim(), enabled: $('#aiOn').checked });
+  refreshAiUI(); renderHints(); closeSheet();
+  toast(AI.on ? '🤖 IA réelle activée' : 'Analyse simulée');
+}
+
+/* =========================================================
    Chargement / simulation IA
    ========================================================= */
 const LOAD_STEPS = [
@@ -4665,32 +4905,56 @@ const LOAD_STEPS = [
   ['Optimisation healthy', 'Recherche des meilleures substitutions…'],
   ['Génération de la recette', 'Rédaction de ta recette personnalisée…']
 ];
-function startAnalysis(){
+const AI_STEPS = [
+  ['Préparation de la photo', 'Compression et envoi sécurisé…'],
+  ['Envoi à ton serveur IA', 'Connexion au serveur d\'analyse…'],
+  ['Reconnaissance du plat', 'L\'IA regarde ta photo…'],
+  ['Ingrédients & calories', 'Estimation des portions et des macros…'],
+  ['Recette healthy', 'Préparation de ta version healthy…']
+];
+function startAnalysis(pending){
   const token = ++state.loadToken;
-  const dish = DISHES[state.dish];
+  if(!pending){ state.ai = null; state.aiNote = null; }
+  const dish = DISHES[state.dish] || DISHES.burger;
+  const steps = pending ? AI_STEPS : LOAD_STEPS;
   setImg($('#scanImg'), state.photo || dish.origImg);
-  $('#checklist').innerHTML = LOAD_STEPS.map(s=>`<div class="check"><span class="st"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>${s[0]}</div>`).join('');
+  $('#checklist').innerHTML = steps.map(s=>`<div class="check"><span class="st"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>${s[0]}</div>`).join('');
   go('s-loading');
   const total = 4200, C = 678.6, t0 = performance.now();
   const checks = $$('#checklist .check');
-  let lastIdx = -1;
+  let lastIdx = -1, outcome = null, doneAt = 0, from = 0, prog = 0, announced = false;
+  if(pending) pending.then(o => { outcome = o; }, err => { outcome = { type:'error', err }; });
+  const ease = x => 1 - Math.pow(1 - Math.min(1, x), 2.2);
   function frame(now){
     if(token !== state.loadToken) return;
-    const t = Math.min(1,(now - t0)/total);
-    const eased = 1 - Math.pow(1-t, 2.2);
-    $('#ringBar').style.strokeDashoffset = C*(1-eased);
-    $('#pct').textContent = Math.round(eased*100)+'%';
-    const idx = Math.min(LOAD_STEPS.length-1, Math.floor(t*LOAD_STEPS.length));
-    if(idx !== lastIdx){
+    const e = now - t0;
+    if(!pending) prog = ease(e/total);
+    else if(!outcome){
+      // En attendant l'IA : la barre avance puis ralentit, sans jamais finir
+      const capped = Math.min(ease(e/total), .55);
+      prog = capped < .55 ? capped : .55 + .23*(1 - Math.exp(-(e - 1300)/10000));
+    } else {
+      if(!doneAt){ doneAt = now; from = prog; }
+      prog = from + (1 - from) * Math.min(1, (now - doneAt) / Math.max(700, 2000 - (doneAt - t0)));
+    }
+    $('#ringBar').style.strokeDashoffset = C*(1-prog);
+    $('#pct').textContent = Math.round(prog*100)+'%';
+    const idx = Math.min(steps.length-1, Math.floor(prog*steps.length));
+    const found = pending && outcome && outcome.ai && outcome.ai.is_food && !announced;
+    if(idx !== lastIdx || found){
       checks.forEach((c,i)=>{ c.classList.toggle('done', i<idx); c.classList.toggle('run', i===idx); });
       const sub = $('#loadSub'); sub.style.opacity = 0;
-      setTimeout(()=>{ sub.textContent = idx===0 ? `${LOAD_STEPS[0][1]}` : (idx===1 ? `${dish.name} détecté · ${LOAD_STEPS[1][1]}` : LOAD_STEPS[idx][1]); sub.style.opacity = 1; },150);
+      const txt = found ? `${outcome.ai.dish} détecté · ${outcome.ai.confidence} % de confiance`
+        : pending ? steps[idx][1]
+        : idx===0 ? steps[0][1] : (idx===1 ? `${dish.name} détecté · ${steps[1][1]}` : steps[idx][1]);
+      if(found) announced = true;
+      setTimeout(()=>{ sub.textContent = txt; sub.style.opacity = 1; },150);
       lastIdx = idx;
     }
-    if(t < 1) requestAnimationFrame(frame);
+    if(prog < 1) requestAnimationFrame(frame);
     else {
       checks.forEach(c=>{ c.classList.remove('run'); c.classList.add('done'); });
-      setTimeout(()=>{ if(token !== state.loadToken) return; showResult(); }, 450);
+      setTimeout(()=>{ if(token !== state.loadToken) return; pending ? applyAiOutcome(outcome) : showResult(); }, 450);
     }
   }
   requestAnimationFrame(frame);
@@ -4790,6 +5054,9 @@ function renderResult(animate=true){
 
   renderRecipe(r);
   renderCompare(d, r);
+  $('.slider-card').hidden = !!d.aiOnly;
+  $('#likeBtn').hidden = !!d.aiOnly;
+  renderAiCard();
 }
 
 function renderRecipe(r){
@@ -4829,7 +5096,7 @@ function renderCompare(d, r){
       <div class="vs-card orig"><div class="ph" data-emoji="${d.emoji}"><img src="${origImg}" alt="Plat original" onerror="imgFail(this)"></div>
         <div class="cap"><small>Original</small><b>${o.label}</b><div class="k">${d.estimate?'≈ ':''}${o.kcal} <small>kcal</small></div></div></div>
       <div class="vs-card heal"><div class="ph" data-emoji="🥗"><img src="${r.img}" alt="Version healthy" onerror="imgFail(this)"></div>
-        <div class="cap"><small>Healthy · ${LEVELS[state.level].short}</small><b>${r.name}</b><div class="k">${r.kcal} <small>kcal</small></div></div></div>
+        <div class="cap"><small>Healthy · ${d.aiOnly ? 'Recette IA' : LEVELS[state.level].short}</small><b>${r.name}</b><div class="k">${r.kcal} <small>kcal</small></div></div></div>
       <span class="vs-badge">VS</span>
     </div>
     <div class="summary reveal d1">
@@ -5426,8 +5693,9 @@ document.addEventListener('click', e => {
       break;
     case 'analyze':
       if(!state.photo) { toast('Importe d\'abord une photo'); return; }
+      state.level = 1; state.source = 'scan'; state.ai = null; state.aiNote = null;
+      if(state.hint === 'auto' && AI.on){ startAnalysis(runAI()); break; }
       state.dish = state.hint !== 'auto' ? state.hint : (detectDish(state.fileName) || 'burger');
-      state.level = 1; state.source = 'scan';
       startAnalysis();
       break;
     case 'example':
@@ -5501,6 +5769,9 @@ document.addEventListener('click', e => {
     }
     case 'share': share(); break;
     case 'openSheet': openSheet(); break;
+    case 'aiSettings': openAiSheet(); break;
+    case 'aiTest': testAiServer(); break;
+    case 'aiSave': saveAiSettings(); break;
     case 'closeSheet': closeSheet(); break;
     case 'pickDish':
       if(state.sheetMode === 'hint'){ state.hint = el.dataset.dish; closeSheet(); renderHints(); break; }
@@ -5755,6 +6026,9 @@ document.addEventListener('visibilitychange', () => {
 /* Init */
 renderFeatured();
 renderExamples();
+refreshAiUI();
+// Le cadre de l'app ne doit jamais défiler (un champ qui prend le focus pourrait le décaler)
+(() => { const app = $('.app'); if(app) app.addEventListener('scroll', () => { if(app.scrollTop || app.scrollLeft){ app.scrollTop = 0; app.scrollLeft = 0; } }, { passive:true }); })();
 renderHomeCats();
 renderLibChips();
 buildMacros();
