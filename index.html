@@ -4714,7 +4714,7 @@ function detectDish(name){
    Vraie analyse IA — serveur gratuit Cloudflare Workers AI
    (code du serveur et guide : dossier « serveur-ia » du dépôt)
    ========================================================= */
-const AI_DEFAULT_URL = '';   // facultatif : colle ici l'adresse de ton serveur pour l'activer sur tous tes appareils
+const AI_DEFAULT_URL = 'https://healthyremake-ai.ewenbourges2003.workers.dev';   // facultatif : colle ici l'adresse de ton serveur pour l'activer sur tous tes appareils
 const AI = {
   get cfg(){ try{ return JSON.parse(localStorage.getItem('hr-ai') || '{}') || {}; }catch(_){ return {}; } },
   get url(){ return String(this.cfg.url || AI_DEFAULT_URL || '').trim().replace(/\/+$/, ''); },
