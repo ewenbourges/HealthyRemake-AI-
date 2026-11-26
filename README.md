@@ -21,4 +21,4 @@ L'app tient dans `index.html` (HTML, CSS et JavaScript). À côté : `sw.js` (ho
 
 https://ewenbourges.github.io/HealthyRemake-AI-/
 
-Dernière mise à jour : 26 novembre 2026 (onglet Compte)
+Dernière mise à jour : 26 novembre 2026 (20 nouvelles fonctionnalités)
