@@ -1422,6 +1422,13 @@ html[data-theme="dark"] .diet-warn b{color:#F5A48C}
 .gd-acc b{display:block;font-size:14.5px}
 .gd-acc small{font-size:12.5px;color:var(--muted)}
 .avatar.sm{width:40px;height:40px;font-size:16px;box-shadow:none}
+
+/* ---------- Valeurs du graphique, messages ---------- */
+.wk em{font-style:normal;font-size:9.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+.wk.on em{color:var(--emerald-d)}
+.toast{z-index:95}
+.sheet-bg.open ~ .toast{bottom:auto;top:22px;transform:translate(-50%,-30px)}
+.sheet-bg.open ~ .toast.show{transform:translate(-50%,0)}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -1558,9 +1565,9 @@ Splash.boot();
         <div class="home-dash reveal d4" id="homeDash"></div>
 
         <div class="stats-row reveal d5">
-          <div class="stat"><b>12k+</b><span>recettes créées</span></div>
-          <div class="stat"><b>4</b><span>niveaux healthy</span></div>
-          <div class="stat"><b>~4 s</b><span>par analyse</span></div>
+          <div class="stat"><b>125</b><span>plats revisités</span></div>
+          <div class="stat"><b>500</b><span>recettes healthy</span></div>
+          <div class="stat"><b>4</b><span>niveaux au choix</span></div>
         </div>
 
         <div class="section-title">⭐ Plats vedettes <button class="link-btn" data-action="libCat" data-cat="vedette" data-open="1">Voir tout ›</button></div>
@@ -5202,9 +5209,20 @@ function goBack(){
 
 /* ---------- Toast ---------- */
 let toastT;
+// Les messages s'affichent l'un après l'autre (3 au maximum en attente)
+const TOASTS = [];
 function toast(msg){
-  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2200);
+  if(TOASTS.includes(msg)) return;
+  TOASTS.push(msg);
+  if(TOASTS.length > 3) TOASTS.splice(1, TOASTS.length - 3);
+  if(TOASTS.length === 1) nextToast();
+}
+function nextToast(){
+  const t = $('#toast'), msg = TOASTS[0];
+  if(!msg) return;
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.classList.remove('show'); setTimeout(() => { TOASTS.shift(); nextToast(); }, 330); }, 2300);
 }
 
 /* =========================================================
@@ -6535,7 +6553,7 @@ function authHTML(){
       <form id="authForm" novalidate>
         <div class="auth-fields" id="authFields">${authFieldsHTML()}</div>
       </form>
-      ${DEMO.on ? '<p class="demo-note">🧪 <span><b>Mode démo</b> : les comptes sont enregistrés sur cet appareil. Tout fonctionne pour une présentation, sans serveur à configurer.</span></p>' : ''}
+      ${DEMO.on && !isPres() ? '<p class="demo-note">🧪 <span><b>Mode démo</b> : les comptes sont enregistrés sur cet appareil. Tout fonctionne pour une présentation, sans serveur à configurer.</span></p>' : ''}
     </div>`;
 }
 function authFieldsHTML(){
@@ -6580,7 +6598,7 @@ function updateSyncPill(){
   const p = $('#syncPill'); if(!p) return;
   const st = ACCT.sync;
   p.className = 'sync-pill ' + st;
-  p.textContent = st === 'saving' ? 'Synchronisation…' : st === 'error' ? 'Hors ligne · réessai plus tard' : ACCT.session && String(ACCT.session.token).startsWith('demo_') ? 'Mode démo · sur cet appareil' : 'Synchronisé';
+  p.textContent = st === 'saving' ? 'Synchronisation…' : st === 'error' ? 'Hors ligne · réessai plus tard' : ACCT.session && String(ACCT.session.token).startsWith('demo_') && !isPres() ? 'Mode démo · sur cet appareil' : 'Synchronisé';
 }
 function row(ic, title, sub, right, attrs = '', cls = ''){
   return `<button type="button" class="set-row ${cls}" ${attrs}><span class="ic">${ic}</span><span class="tx"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${right}</button>`;
@@ -6625,6 +6643,7 @@ function settingsHTML(){
 
     <div class="set-title">Données</div>
     <div class="set-group">
+      ${row('🎬', 'Mode présentation', 'Remplit l\'app comme un utilisateur régulier', CHEV, 'data-action="presSheet"')}
       ${row('📦', 'Exporter mes données', 'Fichier JSON de tout ce que l\'app garde', CHEV, 'data-action="exportData"')}
       ${row('🤍', 'Vider mes favoris', '', CHEV, 'data-action="acctSheet" data-mode="clearFavs"')}
       ${row('↺', 'Réinitialiser l\'app', 'Efface les réglages de cet appareil', CHEV, 'data-action="acctSheet" data-mode="reset"', 'danger')}
@@ -6787,7 +6806,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-5';
+const APP_VERSION = '2026.11.26-6';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -7006,7 +7025,8 @@ function scaleQty(q, f){
     let v = num != null ? parseFloat(num.replace(',', '.')) + (fr1 ? FRAC[fr1] : 0) : FRAC[fr2];
     const out = fmtQty(v * f);
     return out + (m.endsWith(' ') ? ' ' : '');
-  });
+  }).replace(/(\d+(?:,\d+)?)( [½¼¾⅓⅔⅛])? (poignée|tranche|feuille|gousse|boule|pincée|tasse|portion|pièce|rondelle|grande|petite|moyenne|demi-tranche|pulvérisation)\b(?!s)/g,
+    (m, n, fr, w) => parseFloat(n.replace(',', '.')) >= 2 ? `${n}${fr || ''} ${w}s` : m);   // « 3 poignées »
 }
 const SERV = { n:1 };
 function servLabel(n){ return n === 1 ? '1 pers.' : `${n} pers.`; }
@@ -7366,8 +7386,8 @@ function renderJournal(){
     : `<div class="empty"><span class="e">🍽️</span><b>Rien de noté ${day === today ? 'aujourd\'hui' : 'ce jour-là'}</b>Touche « J'ai mangé ça » sur une recette, ou ajoute un repas ici.</div>`;
   // Graphique de la semaine
   const days = Array.from({ length:7 }, (_, i) => dayFrom(today, i - 6));
-  const vals = days.map(d => dayTotals(d).kcal), max = Math.max(tg.kcal * 1.2, ...vals);
-  $('#jWeek').innerHTML = `<div class="wk-bars">${days.map((d, i) => `<button class="wk ${d === day ? 'on' : ''}" data-action="jGoto" data-day="${d}"><i style="height:${Math.max(3, vals[i] / max * 100)}%" class="${vals[i] > tg.kcal * 1.05 ? 'over' : ''}"></i><span>${fmtDay(d, { weekday:'narrow' })}</span></button>`).join('')}</div>
+  const vals = days.map(d => dayTotals(d).kcal), max = Math.max(...vals, 1) * 1.18;
+  $('#jWeek').innerHTML = `<div class="wk-bars">${days.map((d, i) => `<button class="wk ${d === day ? 'on' : ''}" data-action="jGoto" data-day="${d}">${vals[i] ? `<em>${vals[i] >= 1000 ? (vals[i] / 1000).toFixed(1).replace('.', ',') + 'k' : vals[i]}</em>` : ''}<i style="height:${Math.max(3, vals[i] / max * 100)}%" class="${vals[i] > tg.kcal * 1.05 ? 'over' : ''}"></i><span>${fmtDay(d, { weekday:'narrow' })}</span></button>`).join('')}</div>
     <p class="fx-note">Moyenne : ${fmtNum(vals.reduce((a, b) => a + b, 0) / Math.max(1, vals.filter(Boolean).length))} kcal par jour noté · objectif ${fmtNum(tg.kcal)} kcal</p>`;
   renderBadges();
 }
@@ -7713,7 +7733,7 @@ async function fridgePhoto(file){
     await new Promise(r => setTimeout(r, 1200));
     const found = demoFridge();
     st.className = 'fridge-status ok';
-    st.textContent = `✓ ${found} ingrédients repérés (mode démo : détection simulée). Vérifie et complète la liste ci-dessous.`;
+    st.textContent = `✓ ${found} ingrédients repérés${isPres() ? '' : ' (mode démo : détection simulée)'}. Vérifie et complète la liste ci-dessous.`;
     PLUS.stats.scans++; savePlus();
   }
 }
@@ -7778,7 +7798,7 @@ async function drawShareCard(cv){
     x.fillStyle = '#fff'; x.font = F(700, 52); x.fillText(`${v} g`, X0 + 140, 1160);
     x.font = F(500, 28); x.fillStyle = 'rgba(255,255,255,.85)'; x.fillText(`${lab} ${v >= ov ? '+' : '−'}${Math.abs(Math.round((v - ov) / Math.max(1, ov) * 100))} %`, X0 + 140, 1200);
   });
-  x.font = F(500, 30); x.fillStyle = 'rgba(255,255,255,.85)'; x.fillText('Le fast-food, version healthy · ewenbourges.github.io/HealthyRemake-AI-', W / 2, 1290);
+  x.font = F(500, 30); x.fillStyle = 'rgba(255,255,255,.85)'; x.fillText('HealthyRemake AI · le fast-food, version healthy', W / 2, 1290);
 }
 async function shareImage(){
   const cv = $('#shareCanvas'); if(!cv) return;
@@ -7803,7 +7823,7 @@ function reviewsHTML(k){
   return `<h3>Avis <span class="count">${count ? `${stars(avg, 'sm')} ${avg.toFixed(1).replace('.', ',')} · ${count} avis` : 'Aucun avis'}</span></h3>
     ${mine ? `<div class="rv mine"><div class="rv-h"><b>Mon avis</b>${stars(mine.stars, 'sm')}</div>${mine.text ? `<p>${esc(mine.text)}</p>` : ''}${photo ? `<img src="${photo}" alt="Ma réalisation" class="rv-photo">` : ''}<button class="link-btn" data-action="reviewSheet">Modifier</button></div>`
       : `<button class="btn btn-soft" data-action="reviewSheet">⭐ J'ai testé : donner mon avis</button>`}
-    ${pub && pub.demo ? '<p class="fx-note" style="margin:8px 0 2px">Mode démo : avis d\'exemple et avis enregistrés sur cet appareil.</p>' : ''}
+    ${pub && pub.demo && !isPres() ? '<p class="fx-note" style="margin:8px 0 2px">Mode démo : avis d\'exemple et avis enregistrés sur cet appareil.</p>' : ''}
     ${others.slice(0, 5).map(x => `<div class="rv"><div class="rv-h"><b>${esc(x.name || 'Membre')}</b>${stars(x.stars, 'sm')}<small>${new Date(x.t).toLocaleDateString('fr-FR', { day:'numeric', month:'short' })}</small></div>${x.text ? `<p>${esc(x.text)}</p>` : ''}</div>`).join('')}
     ${pub && pub.error ? '' : ''}`;
 }
@@ -8245,7 +8265,9 @@ const PLUS_ACTIONS = {
   exportData: () => exportData(), installApp: () => installApp(),
   applyUpdate: () => applyUpdate(), checkUpdateNow: () => { toast('Recherche de mise à jour…'); checkUpdate(true).then(() => { if(!UPD.pending) toast('✓ Tu as la dernière version'); }); },
   forgotAgain: () => forgotSheet(1),
-  googleDemo: () => googleDemoSheet(), googleDemoPick: el => googleDemoPick(el)
+  googleDemo: () => googleDemoSheet(), googleDemoPick: el => googleDemoPick(el),
+  presSheet: () => presSheet(),
+  presSex: el => { PRES.sex = el.dataset.v; $$('#presSex .chip').forEach(c => c.classList.toggle('on', c === el)); }
 };
 
 /* ---------- Écrans : toujours à jour quand on y revient ---------- */
@@ -8371,9 +8393,11 @@ function demoSampleReviews(dish){
   if(!DISHES[dish] || dish.startsWith('my_') || dish === '__ai') return [];
   let h = 0; for(const ch of dish) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const n = 2 + h % 3;
+  const me = ACCT.session && ACCT.session.user ? low(ACCT.session.user.name || '') : '';
+  const names = SAMPLE_NAMES.filter(x => low(x) !== me);
   return Array.from({ length:n }, (_, i) => {
     const [stars, text] = SAMPLE_TEXTS[(h + i * 3) % SAMPLE_TEXTS.length];
-    return { name:SAMPLE_NAMES[(h + i * 7) % SAMPLE_NAMES.length], stars, text, t:Date.now() - (i + 1) * 86400000 * (2 + (h + i) % 9), sample:true };
+    return { name:names[(h + i * 7) % names.length], stars, text, t:Date.now() - (i + 1) * 86400000 * (2 + (h + i) % 9), sample:true };
   });
 }
 
@@ -8403,7 +8427,7 @@ function googleDemoSheet(){
   openPlus(`<div class="gd-head"><span class="g-logo">G</span><h4>Choisis un compte</h4><p>pour continuer vers HealthyRemake AI</p></div>
     <button class="gd-acc" data-action="googleDemoPick" data-name="Alex" data-email="alex.demo@gmail.com"><span class="avatar sm">A</span><div><b>Alex Martin</b><small>alex.demo@gmail.com</small></div></button>
     <button class="gd-acc" data-action="googleDemoPick" data-name="Sam" data-email="sam.demo@gmail.com"><span class="avatar sm" style="background:linear-gradient(140deg,#6AA7F0,#3B6FC4)">S</span><div><b>Sam Bernard</b><small>sam.demo@gmail.com</small></div></button>
-    <p class="fx-note" style="margin-top:12px">Mode démo : connexion Google simulée, aucun compte Google n'est utilisé.</p>`);
+    ${isPres() ? '' : '<p class="fx-note" style="margin-top:12px">Mode démo : connexion Google simulée, aucun compte Google n\'est utilisé.</p>'}`);
 }
 async function googleDemoPick(el){
   closeSheet();
@@ -8415,6 +8439,123 @@ async function googleDemoPick(el){
     toast(`👋 Bienvenue ${j.user.name} !`);
   }catch(err){ toast(err.message); }
 }
+
+/* =====================================================================
+   Mode présentation : remplit l'app comme celle d'un utilisateur
+   régulier (compte, 2 semaines de journal, badges, courses, planning…)
+   ===================================================================== */
+const isPres = () => { try{ return localStorage.getItem('hr-pres') === '1'; }catch(_){ return false; } };
+const PRES = { sex:'f' };
+function presSheet(){
+  PRES.sex = 'f';
+  openPlus(`<h4>🎬 Mode présentation</h4><p>L'app se remplit comme celle d'un utilisateur régulier : compte connecté, 2 semaines de repas notés, série en cours, badges, favoris, liste de courses, planning, recettes perso et avis.</p>
+    <form id="presForm" novalidate>
+      <label class="ai-field"><span>Prénom affiché sur le profil</span><input id="presName" type="text" maxlength="30" placeholder="Alex" autocomplete="off"></label>
+      <div class="set-title">Profil</div>
+      <div class="chips wrap" id="presSex"><button type="button" class="chip on" data-action="presSex" data-v="f">Femme</button><button type="button" class="chip" data-action="presSex" data-v="m">Homme</button></div>
+      <div class="warn" style="margin-top:16px">Les données actuelles de cet appareil (favoris, journal, listes…) seront remplacées.</div>
+      <button class="btn btn-primary" type="submit">Préparer l'app</button>
+      <button class="btn btn-ghost" type="button" data-action="closeSheet">Annuler</button>
+    </form>`, 'acct-sheet-body');
+}
+const pickExisting = keys => keys.filter(k => DISHES[k]);
+async function seedPresentation(name, sex){
+  BADGE_READY = false;
+  const today = isoDay(), now = new Date();
+  const at = (iso, h, m = 0) => { const d = dateOf(iso); d.setHours(h, m); return d.getTime(); };
+  const MORNING = pickExisting(['pancakes', 'milkshake', 'frappuccino']);
+  const LUNCH = pickExisting(['poke', 'caesar', 'burrito', 'tacos', 'wok', 'chickenburger', 'kebab', 'padthai', 'bigmac', 'sushi']);
+  const DINNER = pickExisting(['pasta', 'bolognaise', 'pizza', 'margherita', 'burger', 'whopper', 'kfc', 'otacos', 'maccheese', 'dominos', 'nuggets']);
+  const lvl = 1, pick = (arr, i) => arr[i % arr.length];
+
+  // Préférences et profil
+  Object.assign(PREFS, { level:lvl, vibrate:true, vidAlerts:true, reduceMotion:false, notif:false });
+  try{ localStorage.setItem('hr-prefs', JSON.stringify(PREFS)); }catch(_){}
+  PLUS = PLUS_DEFAULT();
+  PLUS.profile = sex === 'm' ? { sex:'m', age:27, height:180, weight:76, activity:1.55 } : { sex:'f', age:26, height:167, weight:61, activity:1.55 };
+  PLUS.diet = { type:'none', excl:[] };
+
+  // Journal : 13 jours d'affilée + aujourd'hui (petit-déj et déjeuner)
+  for(let i = 13; i >= 0; i--){
+    const d = dayFrom(today, -i), list = [];
+    const add = (k, h, m) => { const s = snapOf(k, lvl); if(s) list.push({ id:uid(), ...s, t:at(d, h, m) }); };
+    if(i % 2 === 0 && MORNING.length) add(pick(MORNING, i), 8, 15);
+    add(pick(LUNCH, i * 3 + 1), 12, 40);
+    if(i > 0) add(pick(DINNER, i * 5 + 2), 20, 10);
+    PLUS.journal[d] = list;
+  }
+  // Planning : toute la semaine en cours et la suivante
+  const planDays = [...weekDays(0), ...weekDays(1)];
+  planDays.forEach((d, i) => {
+    const p = {};
+    if(i > 0 || now.getHours() < 14){ const s = snapOf(pick(LUNCH, i * 2 + 5), lvl); if(s) p.midi = { ...s, n:1 }; }
+    if(i % 4 !== 3){ const s = snapOf(pick(DINNER, i * 3 + 4), lvl); if(s) p.soir = { ...s, n:1 }; }
+    if(Object.keys(p).length) PLUS.plan[d] = p;
+  });
+  // Recettes perso
+  const mk = (name, emoji, cat, time, serv, desc, ings, steps, origName, origKcal, tip, daysAgo) => {
+    const list = ings.map(([n, g]) => { const nf = nutriFor(n); return { name:n, g, emoji:nf ? nf[1][4] : '🥄' }; });
+    const m = macroOf(list);
+    return { id:uid(), name, emoji, cat, desc, time, serv, ings:list, steps:steps.map(([t, p, tm]) => ({ t, p, tm })),
+      kcal:Math.round(m.kcal), p:Math.round(m.p), c:Math.round(m.c), f:Math.round(m.f), origName, origKcal, tip, created:Date.now() - daysAgo * 86400000 };
+  };
+  PLUS.mine = [
+    mk('Bowl poulet teriyaki maison', '🍱', 'bowls', '20 min', '1 bol', 'Mon bowl du midi, prêt en 20 minutes.',
+      [['Blanc de poulet', 150], ['Riz complet cuit', 130], ['Brocoli', 100], ['Carotte', 60], ['Sauce soja', 15], ['Miel', 8]],
+      [['Cuire le riz', 'Cuis le riz complet (ou réchauffe celui de la veille).', '12 min'], ['Saisir le poulet', 'Coupe le poulet en dés et saisis-le 6 min à la poêle chaude.', '6 min'], ['Laquer', 'Ajoute la sauce soja et le miel, laisse réduire 2 min.', '2 min'], ['Assembler', 'Dresse le riz, les légumes vapeur et le poulet laqué.', '2 min']],
+      'Bowl teriyaki de restaurant', 820, 'Ajoute des graines de sésame grillées au dernier moment.', 9),
+    mk('Wrap protéiné au thon', '🌯', 'street', '10 min', '1 wrap', 'Le déjeuner express des jours chargés.',
+      [['Tortilla complète', 60], ['Thon au naturel', 100], ['Skyr', 50], ['Salade / laitue', 30], ['Tomate', 60], ['Maïs', 30]],
+      [['Préparer la garniture', 'Mélange le thon et le skyr, sale et poivre.', '3 min'], ['Garnir', 'Étale sur la tortilla, ajoute salade, tomate et maïs.', '4 min'], ['Rouler', 'Roule bien serré et coupe en deux.', '1 min']],
+      'Wrap au thon du commerce', 560, 'Un trait de citron dans la sauce change tout.', 4)
+  ];
+  // Courses : 2 recettes du planning + quelques articles, une partie déjà cochée
+  const futureMeals = planDays.filter(d => d >= today).slice(0, 3).flatMap(d => Object.values(PLUS.plan[d] || {}));
+  futureMeals.slice(0, 2).forEach(p => { const r = levelOf(p.k, p.l); if(r) r.ing.forEach(([e, n, q]) => PLUS.shop.push({ id:uid(), name:n, qty:q, emoji:e, aisle:aisleOf(n), done:false, src:[r.name] })); });
+  [['🍌', 'Bananes', '6'], ['🥛', 'Skyr nature', '4 pots'], ['🥚', 'Œufs', '12'], ['🍓', 'Fruits rouges surgelés', '500 g'], ['💧', 'Eau pétillante', '6 bouteilles']]
+    .forEach(([e, n, q]) => PLUS.shop.push({ id:uid(), name:n, qty:q, emoji:e, aisle:aisleOf(n), done:false, src:[] }));
+  PLUS.shop.forEach((x, i) => { if(i % 3 === 0) x.done = true; });
+  // Favoris, avis, statistiques
+  const favs = pickExisting(['bigmac', 'poke', 'pasta', 'kfc', 'pancakes', 'caesar', 'burrito']);
+  state.liked = {}; favs.forEach(k => { state.liked[k + '-' + lvl] = true; });
+  try{ localStorage.setItem('hr-favs', JSON.stringify(state.liked)); }catch(_){}
+  const myReviews = [['bigmac', 5, 'Franchement bluffant, je ne retourne plus au fast-food !'], ['pasta', 5, 'Ma recette du dimanche soir, toute la famille adore.'], ['poke', 4, 'Super frais, j\'ajoute un peu plus de sauce soja.']].filter(([k]) => DISHES[k]);
+  myReviews.forEach(([k, s, t], i) => { PLUS.reviews[k] = { stars:s, text:t, t:Date.now() - (i + 2) * 86400000 }; });
+  PLUS.stats = { scans:9, cooked:6, shares:3 };
+  // Frigo
+  FRIDGE.have = new Set(['poulet', 'œufs', 'tomate', 'salade', 'skyr', 'riz', 'cheddar', 'oignon']); saveFridge();
+  // Badges obtenus, datés dans le passé (pas de rafale de notifications)
+  registerMine();
+  BADGES.forEach(([id, , , , test], i) => { try{ if(test()) PLUS.badges[id] = Date.now() - (14 - Math.min(13, i)) * 86400000; }catch(_){} });
+  try{ localStorage.setItem('hr-plus', JSON.stringify(PLUS)); }catch(_){}
+
+  // Compte connecté (mode démo, enregistré sur l'appareil)
+  const email = (low(name).replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || 'alex') + '@healthyremake.app';
+  const db = demoDB.get(); delete db.users[email]; demoDB.set(db);
+  DEMO.on = true;
+  try{ localStorage.setItem('hr-pres', '1'); }catch(_){}
+  const j = await demoApi('POST', '/auth/signup', { email, password:'Healthy2026', name });
+  const db2 = demoDB.get(); db2.users[email].created = Date.now() - 64 * 86400000;
+  myReviews.forEach(([k, s, t], i) => { (db2.reviews[k] = db2.reviews[k] || []).unshift({ email, name, stars:s, text:t, t:Date.now() - (i + 2) * 86400000 }); });
+  demoDB.set(db2);
+  ACCT.session = { token:j.token, user:{ ...j.user, created:db2.users[email].created } }; ACCT.mode = 'login'; saveSession();
+  await pushData();
+  BADGE_READY = true;
+  Object.keys(PUB).forEach(k => delete PUB[k]);
+  refreshAfterPrefs(); renderHomeDash();
+  state.history = []; go('s-home', { back:true, push:false });
+  $('#s-home').scrollTo({ top:0 });
+  toast(`🎬 App prête pour la présentation, bienvenue ${name} !`);
+}
+document.addEventListener('submit', async e => {
+  if(e.target.id !== 'presForm') return;
+  e.preventDefault();
+  const name = cap($('#presName').value.trim().slice(0, 30)) || 'Alex';
+  const btn = e.target.querySelector('button[type=submit]');
+  busy(btn, true, 'Préparation…');
+  try{ await seedPresentation(name, PRES.sex); closeSheet(); }
+  catch(err){ busy(btn, false); formErr(e.target, 'Impossible de préparer la démo : ' + err.message); }
+});
 /* /PLUS:JS */
 
 document.addEventListener('click', e => {
