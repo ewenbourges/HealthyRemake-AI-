@@ -1677,6 +1677,12 @@ html[data-theme="dark"] .fake-notif{background:rgba(30,40,35,.94)}
 .app[data-screen="s-coach"] .toast.show{transform:translate(-50%,0)}
 
 a.btn{text-decoration:none;display:flex}
+
+.diag{font-size:13px;font-weight:600;line-height:1.45;border-radius:14px;padding:11px 13px;margin:2px 0 12px;background:var(--bg-2);color:var(--ink-2);border:1px solid var(--line)}
+.diag.ok{background:var(--pastel-2);color:var(--emerald-d);border-color:var(--pastel)}
+.diag.bad{background:rgba(240,138,108,.12);color:#C2410C;border-color:rgba(240,138,108,.35)}
+html[data-theme="dark"] .diag.bad{color:#FDBA9F}
+.diag small{display:block;font-weight:500;opacity:.75;margin-top:4px;word-break:break-all}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -7109,7 +7115,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-11';
+const APP_VERSION = '2026.11.26-12';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -9599,6 +9605,7 @@ async function coachListenServer(){
 }
 function serverVoiceHelp(){
   openPlus(`<h4>🎙️ Activer la voix dans l'app</h4>
+    <div class="diag" id="voiceDiag"><span class="spin"></span> Vérification de ton serveur…</div>
     <p>Dans l'app installée, c'est ton serveur Cloudflare qui comprend ce que tu dis (Whisper, gratuit). Il faut le mettre à jour <b>une seule fois</b>, en 1 minute :</p>
     <div class="steps-ins">
       <p><b>1.</b> Touche <b>Copier le code du serveur</b> ci-dessous.</p>
@@ -9610,6 +9617,24 @@ function serverVoiceHelp(){
     <a class="btn btn-ghost" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noopener" style="margin-top:10px">☁️ Ouvrir Cloudflare</a>
     <button class="btn btn-ghost" data-action="micRetry" style="margin-top:10px">🎙️ Réessayer</button>
     <button class="link-btn" data-action="micKeyboard" style="margin:12px auto 0;display:flex">⌨️ Écrire au coach en attendant</button>`);
+  voiceDiag();
+}
+// Diagnostic : ce que le serveur répond vraiment
+async function voiceDiag(){
+  const box = $('#voiceDiag'); if(!box) return;
+  const url = AI.url;
+  if(!url){ box.className = 'diag bad'; box.innerHTML = 'Aucun serveur relié à l\'app (Réglages de l\'analyse IA).'; return; }
+  let html, cls = 'bad';
+  try{
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch(url + '?t=' + Date.now(), { signal:ctrl.signal, cache:'no-store' }); clearTimeout(t);
+    const j = await r.json().catch(() => null);
+    if(j && j.transcribe){ cls = 'ok'; html = '✓ Ton serveur est à jour ! Touche <b>Réessayer</b>.'; REC.ready = true; }
+    else if(j && j.service){ html = '⚠️ Ton serveur répond, mais c\'est encore <b>l\'ancienne version</b>. Dans Cloudflare, après avoir collé le code, clique bien sur <b>Deploy</b> (pas seulement Enregistrer), puis attends le message de réussite.'; REC.ready = false; }
+    else html = `⚠️ Ton serveur a répondu une erreur (code ${r.status}). Le code a peut-être été collé en partie : recolle-le en entier, puis <b>Deploy</b>.`;
+  }catch(e){ html = '⚠️ Ton serveur ne répond pas. Vérifie ta connexion internet, ou que le code collé est complet, puis <b>Deploy</b>.'; }
+  box.className = 'diag ' + cls;
+  box.innerHTML = html + `<small>Serveur : ${esc(url.replace(/^https?:\/\//, ''))}</small>`;
 }
 
 /* =====================================================================
@@ -9624,7 +9649,7 @@ async function serverVoiceReady(force){
   if(REC.ready !== null && !force) return REC.ready;
   try{
     const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 5000);
-    const j = await (await fetch(AI.url, { signal:ctrl.signal })).json(); clearTimeout(t);
+    const j = await (await fetch(AI.url + '?t=' + Date.now(), { signal:ctrl.signal, cache:'no-store' })).json(); clearTimeout(t);
     REC.ready = !!(j && j.transcribe);
   }catch(_){ REC.ready = false; }
   return REC.ready;
@@ -9702,7 +9727,7 @@ async function transcribe(b64){
 async function listenOnce(onState){
   if(REC.busy){ REC.stopFn && REC.stopFn(); return null; }
   if(!navigator.mediaDevices || !window.MediaRecorder){ micHelp('unsupported'); return null; }
-  if(!(await serverVoiceReady())){ micHelp('server'); return null; }
+  if(!(await serverVoiceReady(REC.ready === false))){ micHelp('server'); return null; }
   REC.busy = true;
   try{
     const b64 = await recordVoice(onState);
