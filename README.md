@@ -17,4 +17,4 @@ Tout tient dans un seul fichier `index.html` (HTML, CSS et JavaScript), sans ser
 
 https://ewenbourges.github.io/HealthyRemake-AI-/
 
-Dernière mise à jour : 26 novembre 2026 (police Rubik)
+Dernière mise à jour : 26 novembre 2026 (onglet Compte)
