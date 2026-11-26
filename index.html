@@ -34,7 +34,7 @@ try{
 <title>HealthyRemake AI — Tes plats préférés, version healthy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
 <script>
 /* Repli visuel si une photo ne charge pas (défini tôt pour les images du HTML) */
 function imgFail(img){ var p = img.parentNode; if(p){ p.classList.add('img-fallback'); } img.style.display='none'; }
@@ -65,8 +65,8 @@ function imgFail(img){ var p = img.parentNode; if(p){ p.classList.add('img-fallb
   --shadow:0 10px 30px -10px rgba(22,37,30,.14), 0 2px 6px rgba(22,37,30,.04);
   --shadow-lg:0 30px 70px -20px rgba(8,90,60,.28);
   --ease:cubic-bezier(.2,.8,.2,1);
-  --display:'Nunito', 'Varela Round', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --sans:'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display:'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans:'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -975,17 +975,18 @@ a.vcard{color:inherit;text-decoration:none}
 .sheet-search{height:46px;margin-bottom:12px}
 .cat-tile.all{background:var(--pastel-2);border-color:var(--mint)}
 
-/* ---------- Titres : police ronde (Nunito) ---------- */
-h1.display,.screen-head h2,.result-head h2,.side h2,.lib-title,.load-title,.sheet h4,.cam-error h3{font-weight:800;letter-spacing:-.015em}
-h1.display em,.side h2 em{font-weight:900}
-.macro .val,.stat b,.summary b,.vs-card .cap .k,.score .big,.fx-card b,.kcal-ring+div .val{font-weight:800}
-.section-title,.block h3,.splash-name,.bb-name,.logo,.topbar-title,.vg-head b,.ch-info b,.rc-body b,.ex-card b,.vbody b,
-.how-item b,.side-feat b,.dish-opt b,.crow b,.example-card b,.scan-txt b,.dropzone b,.chef-tip b,.score b,.check,
-.vs-card .cap b,.stp b,.slider-top b,.hint-head b,.empty b,.vg-empty b,.ch-add b,.cat-tile b{font-family:var(--display);letter-spacing:-.005em}
-.section-title,.block h3{font-weight:900;font-size:18px}
-.splash-name,.bb-name{font-weight:900;letter-spacing:-.01em}
-.logo{font-weight:900}
-.vbody b,.rc-body b,.ex-card b,.vs-card .cap b,.stp b,.dish-opt b,.crow b,.how-item b,.side-feat b,.ch-info b{font-weight:800}
+/* ---------- Typographie : serif éditoriale (Fraunces) pour les titres, Instrument Sans pour le texte ---------- */
+h1.display,.screen-head h2,.result-head h2,.side h2,.lib-title,.load-title,.sheet h4,.cam-error h3,.cam-intro h3,.vb-title{
+  font-family:var(--display);font-weight:600;letter-spacing:-.025em;font-optical-sizing:auto}
+h1.display em,.side h2 em{font-weight:500;font-style:italic;letter-spacing:-.02em}
+.macro .val,.stat b,.summary b,.vs-card .cap .k,.score .big,.fx-card b,.ai-dish b{font-family:var(--display);font-weight:600;letter-spacing:-.02em}
+.section-title,.block h3,.splash-name,.bb-name,.logo,.sheet h4{font-family:var(--display);font-weight:600;letter-spacing:-.015em}
+.section-title,.block h3{font-size:20px}
+/* Petits titres (cartes, listes) : rester en sans-serif pour la lisibilité */
+.topbar-title,.vg-head b,.ch-info b,.rc-body b,.ex-card b,.vbody b,.how-item b,.side-feat b,.dish-opt b,.crow b,.example-card b,
+.scan-txt b,.dropzone b,.chef-tip b,.score b,.check,.vs-card .cap b,.stp b,.slider-top b,.hint-head b,.empty b,.vg-empty b,
+.ch-add b,.cat-tile b,.cam-loading b{font-family:var(--sans);font-weight:700;letter-spacing:-.01em}
+.section-title .fx-note,.section-title span,.block h3 span{font-family:var(--sans);letter-spacing:0}
 
 @media (max-width:370px){
   h1.display{font-size:31px}
@@ -1045,7 +1046,7 @@ window.Splash = (function(){
       document.body.classList.add('booting');
       var started = false;
       function go(){ if(!started){ started = true; play(); } }
-      if(document.fonts && document.fonts.load) document.fonts.load('800 25px "Plus Jakarta Sans"').then(go, go);
+      if(document.fonts && document.fonts.load) document.fonts.load('600 25px "Fraunces"').then(go, go);
       setTimeout(go, 600);
     },
     // Relance : l'écran actuel s'efface en fondu, l'app est réinitialisée en dessous, puis le logo se rejoue
