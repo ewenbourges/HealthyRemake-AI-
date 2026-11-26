@@ -14,7 +14,11 @@
    - Variable MODEL ......................................... facultatif
      (pour forcer un autre modèle Workers AI qui accepte les images)
    - Binding « KV namespace » nommé USERS ................... pour les comptes
-     (connexion e-mail + mot de passe, favoris et réglages synchronisés)
+     (connexion e-mail + mot de passe, données synchronisées, avis publics)
+   - Secret RESEND_API_KEY + variable MAIL_FROM ............. facultatif
+     (e-mail « mot de passe oublié » envoyé avec Resend)
+   - Variable GOOGLE_CLIENT_ID .............................. facultatif
+     (bouton « Continuer avec Google »)
    ===================================================================== */
 
 // Adresses autorisées à appeler le serveur depuis un navigateur.
@@ -76,7 +80,8 @@ export default {
 
     // Comptes : /auth/...
     const path = new URL(request.url).pathname.replace(/\/+$/, '');
-    if (path.startsWith('/auth')) return handleAuth(request, env, path, reply);
+    if (path.startsWith('/auth') || path === '/reviews') return handleAuth(request, env, path, reply);
+    if (path === '/fridge') return handleFridge(request, env, reply);
 
     const ready = !!(env && env.AI);
     const codeOk = !env.ACCESS_CODE || request.headers.get('X-Access-Code') === env.ACCESS_CODE;
@@ -84,7 +89,7 @@ export default {
     // Test de connexion depuis l'app
     if (request.method === 'GET') {
       return reply({ ok: ready, service: 'healthyremake-ai', ready, protected: !!env.ACCESS_CODE, code_ok: codeOk,
-        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), error: ready ? undefined : 'binding' });
+        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), mail: !!(env && env.RESEND_API_KEY), google: !!(env && env.GOOGLE_CLIENT_ID), fridge: true, error: ready ? undefined : 'binding' });
     }
     if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
     if (!ready) return reply({ ok: false, error: 'binding', detail: "Ajoute le binding Workers AI nommé AI dans les réglages du Worker." }, 500);
@@ -198,7 +203,7 @@ function clean(d, keys) {
 const SESSION_TTL = 60 * 60 * 24 * 30;   // 30 jours
 const PBKDF2_ITER = 100000;               // maximum accepté par les Workers
 const MAX_ATTEMPTS = 8;                   // essais ratés autorisés par 15 minutes
-const MAX_DATA_CHARS = 60000;             // favoris + réglages synchronisés
+const MAX_DATA_CHARS = 400000;            // favoris, réglages, journal, listes, recettes…
 
 async function handleAuth(request, env, path, reply) {
   const kv = env && env.USERS;
@@ -233,20 +238,27 @@ async function handleAuth(request, env, path, reply) {
       if (await limited(kv, 'login:' + email, MAX_ATTEMPTS) || await limited(kv, 'ip:' + ip, MAX_ATTEMPTS * 4))
         return reply({ ok: false, error: 'rate', detail: 'Trop de tentatives. Réessaie dans 15 minutes.' }, 429);
       const user = await getUser(kv, email);
+      if (user && !user.hash) return reply({ ok: false, error: 'google_only', detail: 'Ce compte utilise « Continuer avec Google ». Connecte-toi avec Google, ou utilise « Mot de passe oublié » pour en créer un.' }, 401);
       const ok = user ? safeEqual(await hashPassword(password, user.salt), user.hash) : (await hashPassword(password, 'x'), false);
       if (!ok) {
         await hit(kv, 'login:' + email); await hit(kv, 'ip:' + ip);
         return reply({ ok: false, error: 'invalid', detail: 'E-mail ou mot de passe incorrect.' }, 401);
       }
-      const token = await newSession(kv, email);
+      const token = await newSession(kv, email, user.tv);
       return reply({ ok: true, token, user: publicUser(user), data: user.data || null });
     }
 
+    if (route === 'POST /auth/forgot') return forgot(kv, env, body, ip, reply);
+    if (route === 'POST /auth/reset') return resetPassword(kv, body, ip, reply);
+    if (route === 'POST /auth/google') return googleLogin(kv, env, body, reply);
+
     // Routes qui demandent d'être connecté
     const token = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
-    const email = /^[a-f0-9]{64}$/.test(token) ? await kv.get('sess:' + token) : null;
+    const sess = /^[a-f0-9]{64}$/.test(token) ? await kv.get('sess:' + token) : null;
+    const [email, ver] = sess ? sess.split('\n') : [];
     const user = email ? await getUser(kv, email) : null;
-    if (!user) return reply({ ok: false, error: 'session', detail: 'Session expirée, reconnecte-toi.' }, 401);
+    if (route === 'GET /reviews') return getReviews(kv, new URL(request.url).searchParams.get('dish'), user, reply);
+    if (!user || (+ver || 0) !== (user.tv || 0)) return reply({ ok: false, error: 'session', detail: 'Session expirée, reconnecte-toi.' }, 401);
 
     if (route === 'GET /auth/me') return reply({ ok: true, user: publicUser(user), data: user.data || null });
 
@@ -267,7 +279,7 @@ async function handleAuth(request, env, path, reply) {
 
     if (route === 'POST /auth/password') {
       if (await limited(kv, 'login:' + user.email, MAX_ATTEMPTS)) return reply({ ok: false, error: 'rate', detail: 'Trop de tentatives. Réessaie dans 15 minutes.' }, 429);
-      if (!safeEqual(await hashPassword(String(body.current || ''), user.salt), user.hash)) {
+      if (user.hash && !safeEqual(await hashPassword(String(body.current || ''), user.salt), user.hash)) {
         await hit(kv, 'login:' + user.email);
         return reply({ ok: false, error: 'invalid', detail: 'Mot de passe actuel incorrect.' }, 401);
       }
@@ -275,14 +287,19 @@ async function handleAuth(request, env, path, reply) {
       if (pwErr) return reply({ ok: false, error: 'password', detail: pwErr }, 400);
       user.salt = randomHex(16);
       user.hash = await hashPassword(String(body.password), user.salt);
+      user.tv = (user.tv || 0) + 1;                       // les autres appareils sont déconnectés
       await kv.put('user:' + user.email, JSON.stringify(user));
-      return reply({ ok: true });
+      return reply({ ok: true, token: await newSession(kv, user.email, user.tv) });
     }
 
     if (route === 'POST /auth/logout') { await kv.delete('sess:' + token); return reply({ ok: true }); }
 
+    if (route === 'POST /reviews') return postReview(kv, body, user, reply);
+    if (route === 'DELETE /reviews') return deleteReview(kv, body, user, reply);
+
     if (route === 'DELETE /auth/account') {
-      if (!safeEqual(await hashPassword(String(body.password || ''), user.salt), user.hash)) {
+      const confirmed = user.hash ? safeEqual(await hashPassword(String(body.password || ''), user.salt), user.hash) : body.confirm === 'SUPPRIMER';
+      if (!confirmed) {
         await hit(kv, 'login:' + user.email);
         return reply({ ok: false, error: 'invalid', detail: 'Mot de passe incorrect.' }, 401);
       }
@@ -310,11 +327,11 @@ function checkPassword(p) {
   if (!/[A-Za-z]/.test(p) || !/[0-9]/.test(p)) return 'Le mot de passe doit contenir au moins une lettre et un chiffre.';
   return '';
 }
-function publicUser(u) { return { email: u.email, name: u.name || '', created: u.created }; }
+function publicUser(u) { return { email: u.email, name: u.name || '', created: u.created, google: !!u.google, password: !!u.hash }; }
 async function getUser(kv, email) { const raw = await kv.get('user:' + email); return raw ? JSON.parse(raw) : null; }
-async function newSession(kv, email) {
+async function newSession(kv, email, ver = 0) {
   const token = randomHex(32);
-  await kv.put('sess:' + token, email, { expirationTtl: SESSION_TTL });
+  await kv.put('sess:' + token, email + '\n' + (ver || 0), { expirationTtl: SESSION_TTL });
   return token;
 }
 function randomHex(bytes) { const a = new Uint8Array(bytes); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); }
@@ -334,4 +351,128 @@ async function limited(kv, key, max) { return (+(await kv.get('rl:' + key)) || 0
 async function hit(kv, key) {
   const n = (+(await kv.get('rl:' + key)) || 0) + 1;
   await kv.put('rl:' + key, String(n), { expirationTtl: 900 });
+}
+
+/* ---------- Mot de passe oublié : code à 6 chiffres envoyé par e-mail (Resend) ---------- */
+async function sha256(t) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+async function forgot(kv, env, body, ip, reply) {
+  if (!env.RESEND_API_KEY) return reply({ ok: false, error: 'mail_off', detail: "L'envoi d'e-mails n'est pas configuré (secret RESEND_API_KEY)." }, 503);
+  const email = normEmail(body.email);
+  if (!email) return reply({ ok: false, error: 'email', detail: 'Adresse e-mail invalide.' }, 400);
+  if (await limited(kv, 'forgot:' + email, 3) || await limited(kv, 'forgotip:' + ip, 10)) return reply({ ok: false, error: 'rate', detail: 'Trop de demandes. Réessaie dans 15 minutes.' }, 429);
+  await hit(kv, 'forgot:' + email); await hit(kv, 'forgotip:' + ip);
+  const user = await getUser(kv, email);
+  if (user) {   // même réponse si le compte n'existe pas : on ne révèle pas qui est inscrit
+    const n = new Uint32Array(1); crypto.getRandomValues(n);
+    const code = String(n[0] % 1000000).padStart(6, '0');
+    await kv.put('reset:' + email, JSON.stringify({ h: await sha256(email + ':' + code), tries: 0 }), { expirationTtl: 900 });
+    const html = `<div style="font-family:system-ui,sans-serif;max-width:420px;margin:auto;padding:24px;color:#16251E"><h2 style="color:#0E9F6E;margin:0 0 12px">HealthyRemake AI</h2><p>Voici ton code pour choisir un nouveau mot de passe :</p><p style="font-size:34px;font-weight:700;letter-spacing:8px;background:#EAF8F1;border-radius:14px;padding:14px;text-align:center;margin:16px 0">${code}</p><p style="color:#4A5A52">Il est valable 15 minutes. Si tu n'as rien demandé, ignore simplement cet e-mail : ton mot de passe ne change pas.</p></div>`;
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers: { Authorization: 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: env.MAIL_FROM || 'HealthyRemake <onboarding@resend.dev>', to: [email], subject: `${code} est ton code HealthyRemake`, html, text: `Ton code HealthyRemake : ${code} (valable 15 minutes).` })
+    });
+    if (!r.ok) return reply({ ok: false, error: 'mail', detail: "L'e-mail n'a pas pu être envoyé. Réessaie plus tard." }, 502);
+  }
+  return reply({ ok: true });
+}
+async function resetPassword(kv, body, ip, reply) {
+  const email = normEmail(body.email), code = String(body.code || '').replace(/\D/g, '');
+  if (await limited(kv, 'resetip:' + ip, 20)) return reply({ ok: false, error: 'rate', detail: 'Trop de tentatives. Réessaie dans 15 minutes.' }, 429);
+  const raw = email ? await kv.get('reset:' + email) : null;
+  const rec = raw ? JSON.parse(raw) : null;
+  if (!rec || rec.tries >= 5 || code.length !== 6 || !safeEqual(await sha256(email + ':' + code), rec.h)) {
+    await hit(kv, 'resetip:' + ip);
+    if (rec) { rec.tries++; await kv.put('reset:' + email, JSON.stringify(rec), { expirationTtl: 900 }); }
+    return reply({ ok: false, error: 'invalid', detail: 'Code incorrect ou expiré.' }, 401);
+  }
+  const pwErr = checkPassword(String(body.password || ''));
+  if (pwErr) return reply({ ok: false, error: 'password', detail: pwErr }, 400);
+  const user = await getUser(kv, email);
+  if (!user) return reply({ ok: false, error: 'invalid', detail: 'Code incorrect ou expiré.' }, 401);
+  user.salt = randomHex(16); user.hash = await hashPassword(String(body.password), user.salt); user.tv = (user.tv || 0) + 1;
+  await kv.put('user:' + email, JSON.stringify(user));
+  await kv.delete('reset:' + email);
+  return reply({ ok: true, token: await newSession(kv, email, user.tv), user: publicUser(user), data: user.data || null });
+}
+
+/* ---------- Continuer avec Google (jeton vérifié auprès de Google) ---------- */
+async function googleLogin(kv, env, body, reply) {
+  if (!env.GOOGLE_CLIENT_ID) return reply({ ok: false, error: 'google_off', detail: "La connexion Google n'est pas configurée (variable GOOGLE_CLIENT_ID)." }, 503);
+  const cred = String(body.credential || '');
+  if (!/^[\w-]+\.[\w-]+\.[\w-]+$/.test(cred)) return reply({ ok: false, error: 'invalid', detail: 'Jeton Google invalide.' }, 400);
+  const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(cred));
+  const g = r.ok ? await r.json() : null;
+  const okIss = g && (g.iss === 'accounts.google.com' || g.iss === 'https://accounts.google.com');
+  if (!g || !okIss || g.aud !== env.GOOGLE_CLIENT_ID || String(g.email_verified) !== 'true' || +g.exp * 1000 < Date.now())
+    return reply({ ok: false, error: 'invalid', detail: 'Connexion Google refusée, réessaie.' }, 401);
+  const email = normEmail(g.email);
+  if (!email) return reply({ ok: false, error: 'email', detail: 'Adresse Google invalide.' }, 400);
+  let user = await getUser(kv, email);
+  if (!user) user = { id: randomHex(12), email, name: cleanName(g.given_name || g.name), salt: null, hash: null, created: Date.now(), data: null, google: true };
+  else user.google = true;
+  await kv.put('user:' + email, JSON.stringify(user));
+  return reply({ ok: true, token: await newSession(kv, email, user.tv), user: publicUser(user), data: user.data || null });
+}
+
+/* ---------- Avis publics sur les recettes ---------- */
+const MAX_REVIEWS = 60;
+const dishKey = d => /^[a-z0-9_]{2,40}$/.test(String(d || '')) ? String(d) : '';
+async function readReviews(kv, dish) { const raw = await kv.get('rev:' + dish); return raw ? JSON.parse(raw) : []; }
+async function getReviews(kv, dish, user, reply) {
+  dish = dishKey(dish);
+  if (!dish) return reply({ ok: false, error: 'dish' }, 400);
+  const list = await readReviews(kv, dish);
+  const avg = list.length ? list.reduce((a, x) => a + x.stars, 0) / list.length : 0;
+  return reply({ ok: true, count: list.length, avg: Math.round(avg * 10) / 10,
+    list: list.slice(0, 20).map(x => ({ name: x.name, stars: x.stars, text: x.text, t: x.t, mine: !!user && x.uid === user.id })) });
+}
+async function postReview(kv, body, user, reply) {
+  const dish = dishKey(body.dish), stars = Math.round(+body.stars);
+  if (!dish || !(stars >= 1 && stars <= 5)) return reply({ ok: false, error: 'review', detail: 'Avis invalide.' }, 400);
+  if (await limited(kv, 'rev:' + user.id, 20)) return reply({ ok: false, error: 'rate', detail: 'Trop d\'avis d\'un coup, réessaie plus tard.' }, 429);
+  await hit(kv, 'rev:' + user.id);
+  const text = String(body.text || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  const list = (await readReviews(kv, dish)).filter(x => x.uid !== user.id);
+  list.unshift({ uid: user.id, name: user.name || 'Membre', stars, text, t: Date.now() });
+  await kv.put('rev:' + dish, JSON.stringify(list.slice(0, MAX_REVIEWS)));
+  return reply({ ok: true });
+}
+async function deleteReview(kv, body, user, reply) {
+  const dish = dishKey(body.dish);
+  if (!dish) return reply({ ok: false, error: 'review' }, 400);
+  const list = await readReviews(kv, dish);
+  await kv.put('rev:' + dish, JSON.stringify(list.filter(x => x.uid !== user.id)));
+  return reply({ ok: true });
+}
+
+/* ---------- Scan du frigo : liste des ingrédients visibles ---------- */
+async function handleFridge(request, env, reply) {
+  if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
+  if (!env.AI) return reply({ ok: false, error: 'binding', detail: 'Ajoute le binding Workers AI nommé AI.' }, 500);
+  if (env.ACCESS_CODE && request.headers.get('X-Access-Code') !== env.ACCESS_CODE) return reply({ ok: false, error: 'code', detail: "Code d'accès manquant ou incorrect." }, 401);
+  let body; try { body = await request.json(); } catch { return reply({ ok: false, error: 'json' }, 400); }
+  const image = typeof body.image === 'string' ? body.image : '';
+  if (!/^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(image) || image.length > MAX_IMAGE_CHARS) return reply({ ok: false, error: 'image', detail: 'Image absente ou trop lourde.' }, 400);
+  const items = (Array.isArray(body.items) ? body.items : []).slice(0, 80).map(x => String(x).replace(/[^\p{L}\p{N} '\-\/]/gu, '').slice(0, 30)).filter(Boolean);
+  const messages = [
+    { role: 'system', content: 'Tu repères les aliments visibles sur une photo de frigo ou de placard. Tu réponds UNIQUEMENT avec un objet JSON valide, en français, sans texte autour.' },
+    { role: 'user', content: [
+      { type: 'text', text: `Liste les aliments que tu vois clairement. Utilise de préférence ces noms quand ils correspondent : ${items.join(', ')}. Format exact : {"ingredients":["…","…"]}. Maximum 25 éléments, sans doublon.` },
+      { type: 'image_url', image_url: { url: image } }
+    ] }
+  ];
+  const models = env.MODEL ? [{ id: env.MODEL, limit: 'max_tokens' }] : MODELS;
+  let last = null;
+  for (const model of models) {
+    try {
+      const out = await env.AI.run(model.id, { messages, temperature: 0.1, [model.limit]: 400 });
+      const data = parseJSON(textOf(out));
+      if (!data || !Array.isArray(data.ingredients)) throw new Error('Réponse illisible du modèle');
+      const list = [...new Set(data.ingredients.map(x => String(x).replace(/[<>]/g, '').trim().toLowerCase().slice(0, 40)).filter(Boolean))].slice(0, 25);
+      return reply({ ok: true, ingredients: list });
+    } catch (e) { last = e; }
+  }
+  const detail = String((last && last.message) || last || 'erreur').slice(0, 200);
+  const quota = /limit|quota|neuron|exceed|4006|429|daily/i.test(detail);
+  return reply({ ok: false, error: quota ? 'quota' : 'ai', detail: quota ? 'Quota gratuit du jour épuisé, coche tes ingrédients à la main.' : detail }, quota ? 429 : 502);
 }

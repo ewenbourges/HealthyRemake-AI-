@@ -70,8 +70,32 @@ Bon à savoir sur les comptes :
 
 | Message dans l'onglet Compte | Solution |
 |---|---|
-| Le serveur Cloudflare doit être mis à jour | Refais l'étape 1 de cette section. |
+| Le serveur Cloudflare doit être mis à jour | Refais l'étape 1 de cette section (avec la dernière version de `worker.js`). |
 | Il manque le stockage KV « USERS » | Refais les étapes 2 à 5. |
+
+## 9. « Mot de passe oublié » par e-mail (facultatif)
+Sans ce réglage, le bouton « Mot de passe oublié » affiche que l'envoi d'e-mails n'est pas activé. Pour l'activer, on utilise **Resend**, gratuit jusqu'à 100 e-mails par jour :
+1. Crée un compte sur https://resend.com, puis ouvre **API Keys** → **Create API Key** et copie la clé (elle commence par `re_`).
+2. Sur la page du Worker : **Settings** → **Variables and Secrets** → **Add** → type **Secret**, nom `RESEND_API_KEY`, colle la clé. Déploie.
+3. **Expéditeur :**
+   - Sans nom de domaine, Resend n'envoie qu'à **l'adresse de ton propre compte Resend** : pratique pour tester, mais pas pour les autres utilisateurs.
+   - Pour écrire à tout le monde, ajoute ton domaine dans Resend (**Domains** → **Add Domain**, puis les enregistrements DNS indiqués). Crée ensuite une variable `MAIL_FROM` dans le Worker, par exemple `HealthyRemake <bonjour@ton-domaine.fr>`.
+
+L'utilisateur reçoit un code à 6 chiffres valable 15 minutes. Changer ou réinitialiser le mot de passe déconnecte automatiquement les autres appareils.
+
+## 10. « Continuer avec Google » (facultatif)
+1. Va sur https://console.cloud.google.com, crée un projet, puis ouvre **API et services** → **Écran de consentement OAuth** : type **Externe**, nom de l'app, ton e-mail. Enregistre.
+2. **Identifiants** → **Créer des identifiants** → **ID client OAuth** → type **Application Web**.
+3. Dans **Origines JavaScript autorisées**, ajoute `https://ewenbourges.github.io`, puis crée et copie l'**ID client** (il finit par `.apps.googleusercontent.com`).
+4. Sur la page du Worker : **Settings** → **Variables and Secrets** → **Add** → type **Text**, nom `GOOGLE_CLIENT_ID`, colle l'ID. Déploie.
+5. Dans `index.html`, colle le même ID dans `const GOOGLE_CLIENT_ID = '';` puis publie : le bouton apparaît dans l'onglet Compte.
+
+« Continuer avec Apple » n'est pas proposé : il exige un compte développeur Apple payant (99 $ par an).
+
+## Ce que la mise à jour du Worker ajoute aussi
+- **Scan du frigo** (`/fridge`) : l'IA liste les aliments visibles sur la photo, puis l'app propose les recettes faisables. Il utilise le même quota Workers AI que l'analyse des plats.
+- **Avis publics** (`/reviews`) : les notes et commentaires des membres connectés, stockés dans le même KV `USERS`.
+- Ouvre l'adresse du Worker pour vérifier : la ligne affiche `"accounts":true`, `"mail":true/false`, `"google":true/false`, `"fridge":true`.
 
 ## Ce que fait l'analyse
 - **Plat présent dans l'app** (125 plats) : l'app affiche sa recette healthy en 4 niveaux. Une carte « Analyse IA réelle » donne le plat reconnu, la confiance, la portion, les calories estimées et les ingrédients repérés.
