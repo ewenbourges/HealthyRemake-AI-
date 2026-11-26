@@ -1655,6 +1655,26 @@ html[data-theme="dark"] .fake-notif{background:rgba(30,40,35,.94)}
 .bc-nut span{font-size:10.5px;color:var(--muted);font-weight:600}
 
 .wr-slide button{pointer-events:auto}
+
+/* Coach : voix */
+.coach-convo.on{background:var(--emerald);border-color:var(--emerald);animation:micPulse 1.4s infinite}
+.coach-voice{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;border-radius:16px;background:var(--card);border:1.5px solid var(--line);font-size:13.5px;animation:panelIn .3s var(--ease)}
+.coach-voice[hidden]{display:none}
+.coach-voice b{flex:1;font-weight:600}
+.coach-voice button{font-size:12.5px;font-weight:700;color:var(--coral-ink);padding:4px 8px;border-radius:10px;background:var(--coral-l)}
+.coach-voice.listen{border-color:var(--emerald);background:var(--pastel-2)}
+.coach-voice.speak{border-color:#4F8FE8}
+.wave{display:flex;align-items:center;gap:3px;height:20px}
+.wave i{width:3px;height:6px;border-radius:3px;background:var(--muted)}
+.coach-voice.listen .wave i{background:var(--emerald);animation:wave .9s ease-in-out infinite}
+.coach-voice.speak .wave i{background:#4F8FE8;animation:wave .7s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.1s!important}.wave i:nth-child(3){animation-delay:.2s!important}.wave i:nth-child(4){animation-delay:.3s!important}.wave i:nth-child(5){animation-delay:.4s!important}
+@keyframes wave{50%{height:18px}}
+
+/* Messages : passage à la ligne, et en haut sur l'écran du coach */
+.toast{white-space:normal;max-width:calc(100% - 32px);width:max-content;text-align:center;justify-content:center}
+.app[data-screen="s-coach"] .toast{bottom:auto;top:76px;transform:translate(-50%,-20px)}
+.app[data-screen="s-coach"] .toast.show{transform:translate(-50%,0)}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -2206,10 +2226,11 @@ Splash.boot();
         <div class="topbar">
           <button class="icon-btn" data-action="back" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
           <div class="topbar-title">🤖 Coach IA</div>
-          <span style="width:44px"></span>
+          <button class="icon-btn coach-convo" id="coachConvo" data-action="coachConvo" aria-pressed="false" aria-label="Discuter à voix haute avec le coach">🎧</button>
         </div>
         <div class="coach-msgs" id="coachMsgs"></div>
         <div class="coach-bottom">
+          <div class="coach-voice" id="coachVoice" hidden></div>
           <div class="chips coach-sugg" id="coachSugg"></div>
           <form class="coach-form" id="coachForm" autocomplete="off">
             <button type="button" class="coach-mic" id="coachMicBtn" data-action="coachMic" aria-label="Parler au coach">🎙️</button>
@@ -7086,7 +7107,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-8';
+const APP_VERSION = '2026.11.26-9';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -8568,6 +8589,9 @@ const PLUS_ACTIONS = {
   presSheet: () => presSheet(),
   cookMic: () => voiceToggle(),
   openCoach: () => coachOpen(), coachSay: el => coachSay(el.dataset.q), coachMic: () => coachMic(),
+  coachConvo: () => CV.convo ? stopConvo() : startConvo(),
+  micRetry: () => { closeSheet(); setTimeout(() => state.screen === 's-coach' ? coachMic() : null, 300); },
+  micKeyboard: () => { closeSheet(); if(state.screen !== 's-coach') coachOpen(); setTimeout(() => $('#coachInput').focus(), 400); },
   openWrapped: () => wrappedOpen(), wrClose: () => wrClose(), wrNext: () => WR.i < WR.slides.length - 1 ? wrShow(WR.i + 1) : wrClose(), wrPrev: () => wrShow(WR.i - 1),
   wrShare: () => wrShare(), wrAgain: () => wrShow(0),
   widgetSheet: () => widgetSheet(), notifDemo: () => notifDemo(),
@@ -8579,7 +8603,9 @@ const PLUS_ACTIONS = {
 
 /* ---------- Écrans : toujours à jour quand on y revient ---------- */
 function plusOnShow(id){
+  const app = $('.app'); if(app) app.dataset.screen = id;
   if(id !== 's-barcode') bcStop();
+  if(id !== 's-coach' && (CV.convo || CV.listening)) stopConvo();
   const r = { 's-journal':renderJournal, 's-shop':renderShop, 's-plan':renderPlan, 's-mine':renderMine, 's-fridge':renderFridgeResults }[id];
   if(r) try{ r(); }catch(_){}
 }
@@ -9058,15 +9084,20 @@ function voiceHandle(raw){
 }
 function voiceOn(){
   VOICE.on = true; $('#cookMic').classList.add('on');
-  if(!SR){
-    toast('🔊 Lecture à voix haute activée (commande vocale indisponible sur ce navigateur)');
+  unlockSpeech();
+  if(!SR || iosInstalled()){
+    toast(iosInstalled() ? '🔊 Lecture à voix haute activée · pour la commande vocale, ouvre l\'app dans Safari' : '🔊 Lecture à voix haute activée (commande vocale indisponible sur ce navigateur)');
     voiceBubble('Lecture à voix haute activée'); readStep(); return;
   }
   try{
     const rec = VOICE.rec = new SR();
-    rec.lang = 'fr-FR'; rec.continuous = true; rec.interimResults = false;
+    rec.lang = 'fr-FR'; rec.continuous = !IS_IOS; rec.interimResults = false;
     rec.onresult = e => { const r = e.results[e.results.length - 1]; if(r && r.isFinal) voiceHandle(r[0].transcript); };
-    rec.onerror = e => { if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ toast('🎙️ Autorise le micro pour piloter la recette à la voix'); voiceOff(); } };
+    rec.onerror = e => {
+      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ voiceOff(); cookClose(); setTimeout(() => micHelp(e.error === 'service-not-allowed' && IS_IOS ? 'dictation' : 'denied'), 350); }
+      else if(e.error === 'network') toast('📶 La commande vocale a besoin d\'internet');
+      else if(e.error === 'audio-capture'){ voiceOff(); toast('🎙️ Aucun micro détecté'); }
+    };
     rec.onend = () => { if(VOICE.on && VOICE.rec === rec) setTimeout(() => { try{ rec.start(); }catch(_){} }, 250); };
     rec.start();
   }catch(_){ toast('Micro indisponible'); }
@@ -9099,13 +9130,15 @@ function renderCoach(){
   box.innerHTML = COACH.msgs.map(m => `<div class="cm ${m.me ? 'me' : ''}">${m.me ? '' : '<span class="cm-av">🤖</span>'}<div class="cm-b">${m.html}</div></div>`).join('')
     + (COACH.busy ? '<div class="cm"><span class="cm-av">🤖</span><div class="cm-b typing"><i></i><i></i><i></i></div></div>' : '');
   $('#coachSugg').innerHTML = COACH_SUGG.map(s => `<button class="chip" data-action="coachSay" data-q="${esc(s)}">${esc(s)}</button>`).join('');
-  $('#coachMicBtn').hidden = !SR;
+  coachVoiceUI();
   const s = $('#s-coach'); requestAnimationFrame(() => s.scrollTo({ top:s.scrollHeight, behavior:'smooth' }));
 }
 function coachSay(q){
   q = String(q || '').trim(); if(!q || COACH.busy) return;
-  COACH.msgs.push({ me:true, html:esc(q) }); COACH.busy = true; renderCoach();
-  setTimeout(() => { COACH.busy = false; COACH.msgs.push({ me:false, html:coachReply(q) }); renderCoach(); buzz(8); }, 700 + Math.random() * 600);
+  COACH.msgs.push({ me:true, html:esc(q) });
+  if(coachVoiceCommand(q)){ renderCoach(); return; }
+  COACH.busy = true; renderCoach();
+  setTimeout(() => { COACH.busy = false; const html = coachReply(q); COACH.msgs.push({ me:false, html }); renderCoach(); buzz(8); coachAfterReply(html); }, 600 + Math.random() * 500);
 }
 function coachCard(k, l){
   const d = DISHES[k], r = d.levels[l];
@@ -9174,17 +9207,7 @@ document.addEventListener('submit', e => {
   e.preventDefault();
   const i = $('#coachInput'); coachSay(i.value); i.value = '';
 });
-function coachMic(){
-  if(!SR) return;
-  try{
-    const rec = new SR(); rec.lang = 'fr-FR'; rec.interimResults = false;
-    const b = $('#coachMicBtn'); b.classList.add('on');
-    rec.onresult = e => { const txt = e.results[0][0].transcript; coachSay(txt); };
-    rec.onend = () => b.classList.remove('on');
-    rec.onerror = () => { b.classList.remove('on'); toast('🎙️ Autorise le micro pour parler au coach'); };
-    rec.start();
-  }catch(_){}
-}
+function coachMic(){ unlockSpeech(); coachListen(); }
 
 /* =====================================================================
    Mon bilan (story animée), widget + notification, code-barres
@@ -9404,6 +9427,149 @@ function bcRender(p){
   $('#bcResult').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 document.addEventListener('submit', e => { if(e.target.id === 'bcForm'){ e.preventDefault(); BC.last = ''; bcFound($('#bcCode').value); } });
+
+/* =====================================================================
+   Voix : micro du coach, mode conversation, aide aux autorisations
+   ===================================================================== */
+const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /android/i.test(navigator.userAgent);
+const iosInstalled = () => IS_IOS && (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches);
+const CV = { rec:null, listening:false, convo:false, speaking:false, err:null, voice:false, lastCards:[], misses:0 };
+
+// Lecture à voix haute, avec une suite une fois la phrase terminée
+function speakThen(text, cb){
+  if(!('speechSynthesis' in window) || !text){ cb && cb(); return; }
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'fr-FR'; u.rate = 1.05; if(FR_VOICE) u.voice = FR_VOICE;
+    let done = false; const fin = () => { if(done) return; done = true; CV.speaking = false; coachVoiceUI(); cb && cb(); };
+    u.onend = fin; u.onerror = fin;
+    CV.speaking = true; coachVoiceUI();
+    speechSynthesis.speak(u);
+    setTimeout(() => { if(!done && !speechSynthesis.speaking) fin(); }, 1500 + text.length * 90);   // sécurité si onend n'arrive pas
+  }catch(_){ cb && cb(); }
+}
+// iOS n'autorise la synthèse vocale qu'après un premier appel lié à un toucher
+function unlockSpeech(){ try{ if('speechSynthesis' in window){ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } }catch(_){} }
+
+/* ---------- Aide : autoriser le micro ---------- */
+async function micState(){
+  try{ const p = await navigator.permissions.query({ name:'microphone' }); return p.state; }catch(_){ return 'unknown'; }
+}
+function micHelp(kind){
+  const steps = kind === 'unsupported'
+    ? ['La reconnaissance vocale n\'est pas disponible dans ce navigateur.', IS_IOS ? 'Ouvre l\'app dans <b>Safari</b> (pas depuis l\'icône de l\'écran d\'accueil).' : 'Ouvre l\'app dans <b>Google Chrome</b>.', 'En attendant, touche le champ de texte puis le <b>🎤 du clavier</b> pour dicter.']
+    : kind === 'installed'
+    ? ['Sur iPhone, la reconnaissance vocale ne fonctionne pas dans l\'app ajoutée à l\'écran d\'accueil.', 'Ouvre <b>ewenbourges.github.io/HealthyRemake-AI-</b> dans <b>Safari</b> pour parler au coach.', 'Ou touche le champ de texte puis le <b>🎤 du clavier</b> pour dicter.']
+    : kind === 'dictation'
+    ? ['Ouvre <b>Réglages › Général › Clavier</b> et active <b>Dictée</b>.', 'Ouvre <b>Réglages › Siri</b> et vérifie que Siri / la dictée sont autorisés.', 'Reviens ici et touche <b>Réessayer</b>.']
+    : IS_IOS
+    ? ['Ouvre <b>Réglages › Safari › Microphone</b> et choisis <b>Autoriser</b>.', 'Ou, dans Safari, touche <b>aA</b> dans la barre d\'adresse › <b>Réglages du site web</b> › <b>Microphone : Autoriser</b>.', 'Reviens ici et touche <b>Réessayer</b>.']
+    : IS_ANDROID
+    ? ['Touche le <b>cadenas 🔒</b> à gauche de l\'adresse.', 'Ouvre <b>Autorisations</b> › <b>Micro</b> › <b>Autoriser</b>.', 'Vérifie aussi <b>Paramètres › Applications › Chrome › Autorisations › Micro</b>.', 'Reviens ici et touche <b>Réessayer</b>.']
+    : ['Clique sur le <b>cadenas 🔒</b> (ou l\'icône réglages) à gauche de l\'adresse.', 'Mets <b>Micro</b> sur <b>Autoriser</b>, puis recharge la page.', 'Vérifie aussi que ton ordinateur autorise le navigateur à utiliser le micro.'];
+  const title = kind === 'unsupported' ? 'Micro indisponible ici' : kind === 'installed' ? 'Ouvre l\'app dans Safari' : kind === 'dictation' ? 'Active la dictée' : 'Autorise le micro';
+  openPlus(`<h4>🎙️ ${title}</h4><p>Pour discuter avec le coach à la voix :</p>
+    <div class="steps-ins">${steps.map((s, i) => `<p><b>${i + 1}.</b> ${s}</p>`).join('')}</div>
+    ${kind === 'unsupported' || kind === 'installed' ? '' : '<button class="btn btn-primary" data-action="micRetry">🎙️ Réessayer</button>'}
+    <button class="btn btn-ghost" data-action="micKeyboard">⌨️ Écrire au coach</button>`);
+}
+
+/* ---------- Écoute ---------- */
+function coachVoiceUI(){
+  const mic = $('#coachMicBtn'), bar = $('#coachVoice'), tog = $('#coachConvo');
+  if(mic) mic.classList.toggle('on', CV.listening);
+  if(tog){ tog.classList.toggle('on', CV.convo); tog.setAttribute('aria-pressed', CV.convo); }
+  if(!bar) return;
+  const txt = CV.listening ? 'Je t\'écoute… parle maintenant' : CV.speaking ? 'Le coach te répond…' : CV.convo ? 'Touche 🎙️ pour parler' : '';
+  bar.hidden = !txt;
+  bar.className = 'coach-voice ' + (CV.listening ? 'listen' : CV.speaking ? 'speak' : '');
+  bar.innerHTML = txt ? `<span class="wave"><i></i><i></i><i></i><i></i><i></i></span><b>${txt}</b>${CV.convo ? '<button data-action="coachConvo">Arrêter</button>' : ''}` : '';
+}
+function coachListen(){
+  if(CV.listening){ try{ CV.rec.stop(); }catch(_){} return; }
+  if(!SR){ micHelp(iosInstalled() ? 'installed' : 'unsupported'); stopConvo(); return; }
+  if(iosInstalled()){ micHelp('installed'); stopConvo(); return; }
+  try{ speechSynthesis.cancel(); }catch(_){}
+  const rec = new SR(); CV.rec = rec; CV.err = null;
+  rec.lang = 'fr-FR'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  let final = '';
+  const input = $('#coachInput');
+  rec.onstart = () => { CV.listening = true; coachVoiceUI(); buzz(10); };
+  rec.onresult = e => {
+    let interim = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){ const r = e.results[i]; if(r.isFinal) final += r[0].transcript; else interim += r[0].transcript; }
+    input.value = (final + ' ' + interim).trim();
+  };
+  rec.onerror = e => { CV.err = e.error; };
+  rec.onend = () => {
+    CV.listening = false; CV.rec = null;
+    const txt = (final || input.value).trim();
+    if(txt && CV.err !== 'not-allowed'){ input.value = ''; CV.misses = 0; CV.voice = true; coachSay(txt); }
+    else if(CV.err) coachMicError(CV.err);
+    else if(CV.convo && ++CV.misses <= 2) setTimeout(coachListen, 300);
+    coachVoiceUI();
+  };
+  try{ rec.start(); }
+  catch(e){ CV.listening = false; coachVoiceUI(); toast('🎙️ Le micro est déjà utilisé, réessaie dans un instant'); }
+}
+async function coachMicError(err){
+  if(err === 'aborted') return;
+  if(err === 'no-speech'){
+    if(CV.convo && ++CV.misses <= 2){ setTimeout(coachListen, 300); return; }
+    toast('🤫 Je n\'ai rien entendu : touche 🎙️ et parle juste après'); return;
+  }
+  stopConvo();
+  if(err === 'not-allowed') micHelp(IS_IOS && (await micState()) !== 'denied' ? 'dictation' : 'denied');
+  else if(err === 'service-not-allowed') micHelp(IS_IOS ? (iosInstalled() ? 'installed' : 'dictation') : 'denied');
+  else if(err === 'audio-capture') toast('🎙️ Aucun micro détecté sur cet appareil');
+  else if(err === 'network') toast('📶 La reconnaissance vocale a besoin d\'internet');
+  else if(err === 'language-not-supported') toast('La reconnaissance vocale en français n\'est pas disponible ici');
+  else toast('🎙️ Micro indisponible (' + err + ')');
+}
+
+/* ---------- Mode conversation : écoute → réponse à voix haute → écoute ---------- */
+function startConvo(){
+  if(!SR || iosInstalled()){ micHelp(iosInstalled() ? 'installed' : 'unsupported'); return; }
+  unlockSpeech();
+  CV.convo = true; CV.misses = 0; coachVoiceUI();
+  toast('🎧 Conversation activée : parle, le coach te répond');
+  coachListen();
+}
+function stopConvo(){
+  CV.convo = false;
+  if(CV.listening){ try{ CV.rec.abort(); }catch(_){} }
+  try{ speechSynthesis.cancel(); }catch(_){}
+  CV.listening = false; CV.speaking = false; coachVoiceUI();
+}
+// Texte lisible d'une réponse du coach (les cartes deviennent « 1. Nom de la recette »)
+function replyToSpeech(html){
+  const tmp = document.createElement('div'); tmp.innerHTML = html;
+  CV.lastCards = [...tmp.querySelectorAll('.cm-card')].map(c => [c.dataset.dish, +c.dataset.level]);
+  tmp.querySelectorAll('.cm-card').forEach((c, i) => { c.replaceWith(` ${['Un', 'Deux', 'Trois'][i] || i + 1} : ${c.querySelector('b').textContent}, ${c.querySelector('small').textContent.replace(/[🔥💪⏱]/g, '').replace(/·/g, ',')}. `); });
+  tmp.querySelectorAll('br').forEach(b => b.replaceWith('. '));
+  return tmp.textContent.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').replace(/\s+/g, ' ').trim() + (CV.lastCards.length ? ' Dis « ouvre la première » pour voir la recette.' : '');
+}
+// Commandes vocales spéciales pendant la conversation
+function coachVoiceCommand(q){
+  const t = low(q);
+  if(/^(stop|arrete|au revoir|fin|termine|c'est tout|merci c'est tout)\b/.test(t)){ COACH.msgs.push({ me:false, html:'À bientôt ! 👋 Touche 🎧 quand tu veux reparler.' }); renderCoach(); speakThen('À bientôt !'); stopConvo(); return true; }
+  const m = t.match(/(?:ouvre|montre|affiche|voir|je prends|je veux)\s+(?:la\s+)?(premiere|1re|une|deuxieme|seconde|2e|deux|troisieme|3e|trois)/);
+  if(m && CV.lastCards.length){
+    const i = /premi|1re|une/.test(m[1]) ? 0 : /deux|second|2e/.test(m[1]) ? 1 : 2;
+    const c = CV.lastCards[i];
+    if(c && DISHES[c[0]]){ stopConvo(); openRecipe(c[0], c[1]); return true; }
+  }
+  return false;
+}
+// Appelé par coachSay une fois la réponse affichée
+function coachAfterReply(html){
+  const spoken = CV.convo || CV.voice;
+  CV.voice = false;
+  if(!spoken) return;
+  speakThen(replyToSpeech(html), () => { if(CV.convo && state.screen === 's-coach') setTimeout(coachListen, 250); });
+}
 /* /PLUS:JS */
 
 document.addEventListener('click', e => {
