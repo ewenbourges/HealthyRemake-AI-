@@ -1408,6 +1408,20 @@ html[data-theme="dark"] .diet-warn b{color:#F5A48C}
   .pd-meal .lbl{width:66px;font-size:11px}
   .nutri-out b{font-size:13px}
 }
+
+/* ---------- Mode démo ---------- */
+.demo-code{background:var(--pastel-2);border:1.5px dashed var(--mint);border-radius:14px;padding:11px 13px;font-size:13.5px;color:var(--ink-2);margin:-4px 0 14px}
+.demo-code b{font-size:18px;letter-spacing:.12em;color:var(--emerald-d)}
+.demo-note{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink-2);background:var(--bg-2);border-radius:12px;padding:9px 11px;margin:12px 0 0;line-height:1.4}
+.g-demo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-weight:600;font-size:14.5px;color:var(--ink)}
+.g-demo:hover{background:var(--bg-2)}
+.g-logo{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff;background:conic-gradient(#EA4335 0 25%,#FBBC05 0 50%,#34A853 0 75%,#4285F4 0)}
+.gd-head{text-align:center;margin-bottom:12px}
+.gd-head .g-logo{width:38px;height:38px;font-size:22px;margin:0 auto 8px}
+.gd-acc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;border-radius:16px;border:1px solid var(--line);background:var(--card);margin-bottom:8px}
+.gd-acc b{display:block;font-size:14.5px}
+.gd-acc small{font-size:12.5px;color:var(--muted)}
+.avatar.sm{width:40px;height:40px;font-size:16px;box-shadow:none}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -6380,7 +6394,13 @@ const AUTH_MSG = {
   rate:'Trop de tentatives. Réessaie dans quelques minutes.',
   quota:'Limite gratuite du jour atteinte, réessaie demain.'
 };
+// Appel du serveur ; en mode démo (serveur pas configuré, pas de réseau…) tout passe par demoApi()
 async function api(method, path, body){
+  if((ACCT.session && String(ACCT.session.token).startsWith('demo_')) || DEMO.on) return demoApi(method, path, body);
+  try{ return await serverApi(method, path, body); }
+  catch(e){ if(DEMO_CODES.includes(e.code) && !ACCT.session) return demoApi(method, path, body); throw e; }
+}
+async function serverApi(method, path, body){
   const base = AI.url;
   if(!base) throw aiErr('no_server', AUTH_MSG.no_server);
   const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 15000);
@@ -6524,6 +6544,7 @@ function authHTML(){
       <form id="authForm" novalidate>
         <div class="auth-fields" id="authFields">${authFieldsHTML()}</div>
       </form>
+      ${DEMO.on ? '<p class="demo-note">🧪 <span><b>Mode démo</b> : les comptes sont enregistrés sur cet appareil. Tout fonctionne pour une présentation, sans serveur à configurer.</span></p>' : ''}
     </div>`;
 }
 function authFieldsHTML(){
@@ -6568,7 +6589,7 @@ function updateSyncPill(){
   const p = $('#syncPill'); if(!p) return;
   const st = ACCT.sync;
   p.className = 'sync-pill ' + st;
-  p.textContent = st === 'saving' ? 'Synchronisation…' : st === 'error' ? 'Hors ligne · réessai plus tard' : 'Synchronisé';
+  p.textContent = st === 'saving' ? 'Synchronisation…' : st === 'error' ? 'Hors ligne · réessai plus tard' : ACCT.session && String(ACCT.session.token).startsWith('demo_') ? 'Mode démo · sur cet appareil' : 'Synchronisé';
 }
 function row(ic, title, sub, right, attrs = '', cls = ''){
   return `<button type="button" class="set-row ${cls}" ${attrs}><span class="ic">${ic}</span><span class="tx"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${right}</button>`;
@@ -6775,7 +6796,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-3';
+const APP_VERSION = '2026.11.26-4';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -7697,8 +7718,12 @@ async function fridgePhoto(file){
     st.textContent = found ? `✓ ${found} ingrédient${found > 1 ? 's' : ''} repéré${found > 1 ? 's' : ''}. Vérifie et complète la liste ci-dessous.` : 'L\'IA n\'a rien reconnu de connu : coche tes ingrédients à la main.';
     PLUS.stats.scans++; savePlus();
   }catch(e){
-    st.className = 'fridge-status bad';
-    st.textContent = e.name === 'AbortError' ? 'Le serveur met trop de temps à répondre, réessaie.' : (e.code === 'no_server' || e.message ? e.message : 'Serveur injoignable.');
+    // Démo : sans IA disponible, on simule la détection pour que le parcours reste complet
+    await new Promise(r => setTimeout(r, 1200));
+    const found = demoFridge();
+    st.className = 'fridge-status ok';
+    st.textContent = `✓ ${found} ingrédients repérés (mode démo : détection simulée). Vérifie et complète la liste ci-dessous.`;
+    PLUS.stats.scans++; savePlus();
   }
 }
 document.addEventListener('change', e => {
@@ -7782,19 +7807,19 @@ const PUB = {};   // avis publics chargés depuis le serveur, par plat
 const stars = (n, size = '') => `<span class="stars ${size}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= Math.round(n) ? 'on' : ''}">★</i>`).join('')}</span>`;
 function reviewsHTML(k){
   const mine = PLUS.reviews[k], pub = PUB[k], photo = REVIEW_PHOTOS[k];
-  const others = pub && pub.list ? pub.list.filter(x => !(ACCT.session && x.mine)) : [];
+  const others = pub && pub.list ? pub.list.filter(x => !x.mine) : [];
   const avg = pub && pub.count ? pub.avg : mine ? mine.stars : 0, count = pub && pub.count ? pub.count : mine ? 1 : 0;
   return `<h3>Avis <span class="count">${count ? `${stars(avg, 'sm')} ${avg.toFixed(1).replace('.', ',')} · ${count} avis` : 'Aucun avis'}</span></h3>
     ${mine ? `<div class="rv mine"><div class="rv-h"><b>Mon avis</b>${stars(mine.stars, 'sm')}</div>${mine.text ? `<p>${esc(mine.text)}</p>` : ''}${photo ? `<img src="${photo}" alt="Ma réalisation" class="rv-photo">` : ''}<button class="link-btn" data-action="reviewSheet">Modifier</button></div>`
       : `<button class="btn btn-soft" data-action="reviewSheet">⭐ J'ai testé : donner mon avis</button>`}
+    ${pub && pub.demo ? '<p class="fx-note" style="margin:8px 0 2px">Mode démo : avis d\'exemple et avis enregistrés sur cet appareil.</p>' : ''}
     ${others.slice(0, 5).map(x => `<div class="rv"><div class="rv-h"><b>${esc(x.name || 'Membre')}</b>${stars(x.stars, 'sm')}<small>${new Date(x.t).toLocaleDateString('fr-FR', { day:'numeric', month:'short' })}</small></div>${x.text ? `<p>${esc(x.text)}</p>` : ''}</div>`).join('')}
     ${pub && pub.error ? '' : ''}`;
 }
 async function loadPublicReviews(k){
-  if(!AI.url || k.startsWith('my_') || k === '__ai' || (PUB[k] && Date.now() - PUB[k].at < 120000)) return;
+  if(k.startsWith('my_') || k === '__ai' || (PUB[k] && Date.now() - PUB[k].at < 120000)) return;
   try{
-    const r = await fetch(AI.url + '/reviews?dish=' + encodeURIComponent(k), { headers: ACCT.session ? { Authorization:'Bearer ' + ACCT.session.token } : {} });
-    const j = await r.json();
+    const j = await api('GET', '/reviews?dish=' + encodeURIComponent(k));
     if(!j.ok || !Array.isArray(j.list)) return;
     PUB[k] = { at:Date.now(), list:j.list, avg:j.avg || 0, count:j.count || 0 };
     if(state.dish === k && $('#reviewsBlock')) $('#reviewsBlock').innerHTML = reviewsHTML(k);
@@ -7810,7 +7835,7 @@ function reviewSheet(){
       <label class="ai-field"><span>Ton commentaire <i>· facultatif</i></span><textarea id="rvText" maxlength="300" rows="3" placeholder="Le goût, une astuce, ce que tu as changé…">${esc(mine.text || '')}</textarea></label>
       <div class="rv-photo-pick"><button type="button" class="btn btn-ghost" data-action="rvPhoto">📸 ${REV.photo ? 'Changer la photo' : 'Ajouter une photo de mon plat'}</button>${REV.photo ? `<img src="${REV.photo}" alt="">` : ''}</div>
       <input type="file" id="rvFile" accept="image/*" hidden>
-      <p class="fx-note">${ACCT.session ? 'Ta note et ton commentaire seront visibles par les autres membres, avec ton prénom. La photo reste sur ton appareil.' : 'Connecte-toi dans Compte pour publier ton avis. Sinon, il reste sur cet appareil.'}</p>
+      <p class="fx-note">${ACCT.session ? 'Ta note et ton commentaire s\'affichent dans les avis de la recette, avec ton prénom. La photo reste sur ton appareil.' : 'Connecte-toi dans Compte pour publier ton avis. Sinon, il reste sur cet appareil.'}</p>
       <p class="form-err" role="alert" hidden></p>
       <button class="btn btn-primary" type="submit">Enregistrer mon avis</button>
       ${PLUS.reviews[k] ? '<button class="btn btn-ghost" type="button" data-action="rvDelete">Supprimer mon avis</button>' : ''}
@@ -7833,7 +7858,7 @@ document.addEventListener('submit', async e => {
   savePlus();
   closeSheet(); toast('⭐ Merci pour ton avis !');
   if(ACCT.session && !k.startsWith('my_') && k !== '__ai'){
-    try{ await api('POST', '/reviews', { dish:k, stars:REV.stars, text }); delete PUB[k]; loadPublicReviews(k); }catch(err){ if(err.code !== 'old_server') toast('Avis gardé sur l\'appareil : ' + err.message); }
+    try{ await api('POST', '/reviews', { dish:k, stars:REV.stars, text }); delete PUB[k]; loadPublicReviews(k); }catch(err){ toast('Avis gardé sur l\'appareil : ' + err.message); }
   }
   if($('#reviewsBlock')) $('#reviewsBlock').innerHTML = reviewsHTML(k);
 });
@@ -7980,6 +8005,7 @@ function forgotSheet(step = 1){
       <button class="btn btn-ghost" type="button" data-action="closeSheet">Annuler</button>
     </form>`);
   else openPlus(`<h4>Vérifie tes e-mails 📬</h4><p>Si un compte existe pour <b>${esc(FORGOT.email)}</b>, un code vient d'y être envoyé (pense aux spams). Il est valable 15 minutes.</p>
+    ${DEMO.on ? (DEMO.lastCode ? `<div class="demo-code">📬 Mode démo : l'e-mail est simulé. Ton code est <b>${DEMO.lastCode}</b></div>` : '<div class="demo-code">Mode démo : aucun compte n\'existe avec cette adresse sur cet appareil.</div>') : ''}
     <form id="forgotForm" data-step="2" novalidate>
       <label class="ai-field"><span>Code reçu</span><input id="fgCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" class="code-in"></label>
       ${pwField('fgPw', 'Nouveau mot de passe', 'new-password', true)}
@@ -8041,7 +8067,8 @@ async function onGoogle(res){
   }
 }
 function googleBlock(){
-  return GOOGLE_CLIENT_ID ? `<div class="or"><span>ou</span></div><div id="gBtn" class="g-btn"></div>` : '';
+  return GOOGLE_CLIENT_ID ? `<div class="or"><span>ou</span></div><div id="gBtn" class="g-btn"></div>`
+    : `<div class="or"><span>ou</span></div><button type="button" class="g-demo" data-action="googleDemo"><span class="g-logo">G</span>Continuer avec Google</button>`;
 }
 
 /* ---------- Installer l'app ---------- */
@@ -8226,7 +8253,8 @@ const PLUS_ACTIONS = {
   legal: el => openLegal(el.dataset.t), legalTab: el => renderLegal(el.dataset.t),
   exportData: () => exportData(), installApp: () => installApp(),
   applyUpdate: () => applyUpdate(), checkUpdateNow: () => { toast('Recherche de mise à jour…'); checkUpdate(true).then(() => { if(!UPD.pending) toast('✓ Tu as la dernière version'); }); },
-  forgotAgain: () => forgotSheet(1)
+  forgotAgain: () => forgotSheet(1),
+  googleDemo: () => googleDemoSheet(), googleDemoPick: el => googleDemoPick(el)
 };
 
 /* ---------- Écrans : toujours à jour quand on y revient ---------- */
@@ -8237,11 +8265,164 @@ function plusOnShow(id){
 
 /* ---------- Démarrage ---------- */
 function plusInit(){
+  detectDemo();
   registerMine();
   BADGE_READY = true; checkBadges();
   renderHomeDash();
   renderFilterBar();
   openHashRoute(location.hash);
+}
+
+/* =====================================================================
+   Mode démo : quand le serveur n'est pas configuré (ou sans réseau),
+   comptes, synchronisation, mot de passe oublié, Google, avis et scan
+   du frigo fonctionnent quand même, avec des données gardées sur l'appareil.
+   ===================================================================== */
+const DEMO = { on:false, lastCode:'' };
+const DEMO_CODES = ['no_server', 'network', 'old_server', 'accounts_off', 'mail_off', 'google_off', 'quota'];
+const demoDB = {
+  get(){ try{ return Object.assign({ users:{}, sessions:{}, reviews:{}, resets:{} }, JSON.parse(localStorage.getItem('hr-demo-db') || '{}')); }catch(_){ return { users:{}, sessions:{}, reviews:{}, resets:{} }; } },
+  set(db){ try{ localStorage.setItem('hr-demo-db', JSON.stringify(db)); }catch(_){} }
+};
+async function demoHash(pw, salt){
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pw));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+const demoErr = (code, msg) => { throw aiErr(code, msg); };
+const demoUser = u => ({ email:u.email, name:u.name || '', created:u.created, google:!!u.google, password:!!u.hash, demo:true });
+function demoSession(db, email){ const t = 'demo_' + uid() + uid(); db.sessions[t] = email; return t; }
+
+async function demoApi(method, path, body = {}){
+  await new Promise(r => setTimeout(r, 350));   // petit délai réaliste
+  DEMO.on = true;
+  const db = demoDB.get(), route = method + ' ' + path.split('?')[0];
+  const email = String(body.email || '').trim().toLowerCase();
+  if(route === 'POST /auth/signup'){
+    if(db.users[email]) demoErr('exists', 'Un compte existe déjà avec cette adresse.');
+    const salt = uid();
+    db.users[email] = { email, name:String(body.name || '').slice(0, 40), salt, hash:await demoHash(body.password, salt), created:Date.now(), data:null };
+    const token = demoSession(db, email); demoDB.set(db);
+    return { ok:true, token, user:demoUser(db.users[email]) };
+  }
+  if(route === 'POST /auth/login'){
+    const u = db.users[email];
+    if(u && !u.hash) demoErr('google_only', 'Ce compte utilise « Continuer avec Google ».');
+    if(!u || await demoHash(body.password, u.salt) !== u.hash) demoErr('invalid', 'E-mail ou mot de passe incorrect.');
+    const token = demoSession(db, email); demoDB.set(db);
+    return { ok:true, token, user:demoUser(u), data:u.data };
+  }
+  if(route === 'POST /auth/forgot'){
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    db.resets[email] = { code, exp:Date.now() + 15 * 60000 }; demoDB.set(db);
+    DEMO.lastCode = db.users[email] ? code : '';
+    return { ok:true };
+  }
+  if(route === 'POST /auth/reset'){
+    const r = db.resets[email], u = db.users[email];
+    if(!r || !u || r.exp < Date.now() || r.code !== String(body.code)) demoErr('invalid', 'Code incorrect ou expiré.');
+    u.salt = uid(); u.hash = await demoHash(body.password, u.salt); delete db.resets[email];
+    const token = demoSession(db, email); demoDB.set(db); DEMO.lastCode = '';
+    return { ok:true, token, user:demoUser(u), data:u.data };
+  }
+  if(route === 'POST /auth/google'){
+    const ge = String(body.email || 'alex.demo@gmail.com').toLowerCase();
+    const u = db.users[ge] = db.users[ge] || { email:ge, name:body.name || 'Alex', salt:null, hash:null, created:Date.now(), data:null, google:true };
+    u.google = true;
+    const token = demoSession(db, ge); demoDB.set(db);
+    return { ok:true, token, user:demoUser(u), data:u.data };
+  }
+  if(route === 'GET /reviews'){
+    const dish = new URLSearchParams(path.split('?')[1] || '').get('dish') || '';
+    const me = ACCT.session && db.sessions[ACCT.session.token];
+    const list = [...(db.reviews[dish] || []).map(x => ({ ...x, mine: x.email === me })), ...demoSampleReviews(dish)];
+    const avg = list.length ? list.reduce((a, x) => a + x.stars, 0) / list.length : 0;
+    return { ok:true, count:list.length, avg:Math.round(avg * 10) / 10, list, demo:true };
+  }
+  // Routes qui demandent d'être connecté
+  const me = ACCT.session && db.sessions[ACCT.session.token], u = me && db.users[me];
+  if(!u){ sessionExpired(); demoErr('session', 'Session expirée, reconnecte-toi.'); }
+  if(route === 'GET /auth/me') return { ok:true, user:demoUser(u), data:u.data };
+  if(route === 'PUT /auth/data'){ u.data = { ...body.data, savedAt:Date.now() }; demoDB.set(db); return { ok:true, savedAt:u.data.savedAt }; }
+  if(route === 'PUT /auth/profile'){ u.name = String(body.name || '').slice(0, 40); demoDB.set(db); return { ok:true, user:demoUser(u) }; }
+  if(route === 'POST /auth/password'){
+    if(u.hash && await demoHash(body.current, u.salt) !== u.hash) demoErr('invalid', 'Mot de passe actuel incorrect.');
+    u.salt = uid(); u.hash = await demoHash(body.password, u.salt); demoDB.set(db);
+    return { ok:true };
+  }
+  if(route === 'POST /auth/logout'){ delete db.sessions[ACCT.session.token]; demoDB.set(db); return { ok:true }; }
+  if(route === 'DELETE /auth/account'){
+    const ok = u.hash ? await demoHash(body.password, u.salt) === u.hash : body.confirm === 'SUPPRIMER';
+    if(!ok) demoErr('invalid', 'Mot de passe incorrect.');
+    delete db.users[me]; Object.keys(db.sessions).forEach(t => { if(db.sessions[t] === me) delete db.sessions[t]; }); demoDB.set(db);
+    return { ok:true };
+  }
+  if(route === 'POST /reviews' || route === 'DELETE /reviews'){
+    const list = (db.reviews[body.dish] || []).filter(x => x.email !== me);
+    if(route === 'POST /reviews') list.unshift({ email:me, name:u.name || 'Membre', stars:body.stars, text:String(body.text || '').slice(0, 300), t:Date.now() });
+    db.reviews[body.dish] = list; demoDB.set(db);
+    return { ok:true };
+  }
+  demoErr('route', 'Action indisponible en mode démo.');
+}
+
+// Quelques avis d'exemple, toujours les mêmes pour un plat donné
+const SAMPLE_NAMES = ['Camille', 'Yanis', 'Léa', 'Hugo', 'Inès', 'Nathan', 'Sarah', 'Lucas', 'Emma', 'Rayan'];
+const SAMPLE_TEXTS = [
+  [5, 'Bluffant, on retrouve vraiment le goût de l\'original. Je la refais cette semaine !'],
+  [5, 'Parfait après la salle, rassasiant et plein de protéines.'],
+  [4, 'Très bon. J\'ai ajouté un peu de piment, top.'],
+  [4, 'Facile à faire, toute la famille a aimé.'],
+  [5, 'Meilleure version healthy que j\'ai testée, la sauce est incroyable.'],
+  [3, 'Bon, mais j\'ai dû rallonger un peu la cuisson.'],
+  [4, 'Super pour le meal prep, ça se garde bien 2 jours.']
+];
+function demoSampleReviews(dish){
+  if(!DISHES[dish] || dish.startsWith('my_') || dish === '__ai') return [];
+  let h = 0; for(const ch of dish) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const n = 2 + h % 3;
+  return Array.from({ length:n }, (_, i) => {
+    const [stars, text] = SAMPLE_TEXTS[(h + i * 3) % SAMPLE_TEXTS.length];
+    return { name:SAMPLE_NAMES[(h + i * 7) % SAMPLE_NAMES.length], stars, text, t:Date.now() - (i + 1) * 86400000 * (2 + (h + i) % 9), sample:true };
+  });
+}
+
+// Le serveur est-il prêt pour les comptes ? Sinon on passe directement en démo
+async function detectDemo(){
+  if(!AI.url){ DEMO.on = true; return; }
+  try{
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 5000);
+    const j = await (await fetch(AI.url, { signal:ctrl.signal })).json(); clearTimeout(t);
+    DEMO.on = !(j && j.accounts);
+  }catch(_){ DEMO.on = true; }
+  if(state.screen === 's-account') renderAccount();
+}
+
+// Scan du frigo simulé quand l'IA n'est pas disponible
+function demoFridge(){
+  const pool = ['poulet', 'œufs', 'tomate', 'salade', 'oignon', 'carotte', 'courgette', 'skyr', 'fromage blanc', 'cheddar', 'mozzarella', 'riz', 'pâtes', 'citron', 'poivron', 'champignons', 'lait', 'jambon', 'avocat', 'thon'];
+  const pick = pool.sort(() => Math.random() - .5).slice(0, 5 + Math.floor(Math.random() * 3));
+  let found = 0;
+  pick.forEach(id => { if(FRIDGE_FLAT.some(x => x[0] === id) && !FRIDGE.have.has(id)){ FRIDGE.have.add(id); found++; } });
+  saveFridge(); renderFridge();
+  return found;
+}
+
+// Faux bouton « Continuer avec Google » (démo)
+function googleDemoSheet(){
+  openPlus(`<div class="gd-head"><span class="g-logo">G</span><h4>Choisis un compte</h4><p>pour continuer vers HealthyRemake AI</p></div>
+    <button class="gd-acc" data-action="googleDemoPick" data-name="Alex" data-email="alex.demo@gmail.com"><span class="avatar sm">A</span><div><b>Alex Martin</b><small>alex.demo@gmail.com</small></div></button>
+    <button class="gd-acc" data-action="googleDemoPick" data-name="Sam" data-email="sam.demo@gmail.com"><span class="avatar sm" style="background:linear-gradient(140deg,#6AA7F0,#3B6FC4)">S</span><div><b>Sam Bernard</b><small>sam.demo@gmail.com</small></div></button>
+    <p class="fx-note" style="margin-top:12px">Mode démo : connexion Google simulée, aucun compte Google n'est utilisé.</p>`);
+}
+async function googleDemoPick(el){
+  closeSheet();
+  try{
+    const j = await demoApi('POST', '/auth/google', { email:el.dataset.email, name:el.dataset.name });
+    ACCT.session = { token:j.token, user:j.user }; saveSession();
+    if(j.data) adoptRemote(j.data, true);
+    await pushData(); renderAccount();
+    toast(`👋 Bienvenue ${j.user.name} !`);
+  }catch(err){ toast(err.message); }
 }
 /* /PLUS:JS */
 

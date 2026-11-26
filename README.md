@@ -15,6 +15,8 @@ Application web mobile-first : scanne ou importe la photo d'un plat, et l'app pr
 - Onglet vidéos avec les dernières recettes healthy des créateurs YouTube
 - Thème clair / sombre, mentions légales et politique de confidentialité
 
+**Mode démo :** sans serveur configuré (ou sans réseau), l'app passe toute seule en mode démo. Comptes, synchronisation, mot de passe oublié (code affiché à l'écran), connexion Google, avis et scan du frigo fonctionnent alors sur l'appareil, ce qui est idéal pour une présentation.
+
 L'app tient dans `index.html` (HTML, CSS et JavaScript). À côté : `sw.js` (hors ligne et mises à jour), `manifest.webmanifest` et les icônes (installation sur l'écran d'accueil). Sans serveur, tout fonctionne sur l'appareil et l'analyse photo est simulée. Le serveur gratuit Cloudflare (dossier `serveur-ia`) ajoute la vraie IA, les comptes et les avis publics. Les valeurs nutritionnelles restent des estimations.
 
 ## En ligne
