@@ -1429,6 +1429,232 @@ html[data-theme="dark"] .diet-warn b{color:#F5A48C}
 .toast{z-index:95}
 .sheet-bg.open ~ .toast{bottom:auto;top:22px;transform:translate(-50%,-30px)}
 .sheet-bg.open ~ .toast.show{transform:translate(-50%,0)}
+
+/* =====================================================================
+   Effets « waouh »
+   ===================================================================== */
+/* Étiquettes du scan */
+.stag{position:absolute;z-index:3;display:flex;align-items:center;gap:6px;max-width:170px;padding:6px 10px 6px 8px;border-radius:12px;background:rgba(22,37,30,.86);color:#fff;font-size:11px;white-space:nowrap;box-shadow:0 8px 18px -8px rgba(0,0,0,.5);backdrop-filter:blur(6px);opacity:0;animation:stagIn .5s var(--ease) forwards}
+.stag i{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 4px rgba(167,230,200,.3);flex:none;animation:pulse 1.6s infinite}
+.stag b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.stag em{font-style:normal;font-weight:700;color:var(--mint)}
+@keyframes stagIn{from{opacity:0;transform:translateY(8px) scale(.85)}to{opacity:1;transform:none}}
+
+/* Transformation */
+.morph{position:absolute;inset:0;z-index:85;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(120% 90% at 50% 30%,#12B07A 0%,#08704D 60%,#053F2C 100%);color:#fff;padding:30px;cursor:pointer}
+.morph[hidden]{display:none}
+.morph.go{animation:moIn .35s ease}
+.morph.out{animation:moOut .38s ease forwards}
+@keyframes moIn{from{opacity:0}to{opacity:1}}
+@keyframes moOut{to{opacity:0;transform:scale(1.04)}}
+.mo-stage{position:relative;width:min(78vw,300px);aspect-ratio:1;border-radius:50%;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),0 0 0 8px rgba(255,255,255,.12)}
+.mo-pane{position:absolute;inset:0}
+.mo-pane img{width:100%;height:100%;object-fit:cover}
+.mo-pane.ph.img-fallback::after{font-size:110px}
+.mo-pane.a{background:linear-gradient(135deg,#F6D9B8,#F0A77A)}
+.mo-pane.b{background:linear-gradient(135deg,#D8F3E6,#A7E6C8);clip-path:inset(0 0 0 100%);animation:moWipe 1.1s .65s cubic-bezier(.7,0,.3,1) forwards}
+@keyframes moWipe{to{clip-path:inset(0 0 0 0)}}
+.mo-lab{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;background:rgba(22,37,30,.75);color:#fff}
+.mo-lab.h{background:#fff;color:var(--emerald-d)}
+.mo-wipe{position:absolute;top:-10%;bottom:-10%;left:100%;width:6px;background:#fff;box-shadow:0 0 30px 10px rgba(255,255,255,.8);animation:moLine 1.1s .65s cubic-bezier(.7,0,.3,1) forwards}
+.mo-wipe i{position:absolute;left:-6px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 14px 4px #fff;animation:spark 1s infinite}
+.mo-wipe i:nth-child(1){top:22%}.mo-wipe i:nth-child(2){top:52%;animation-delay:.3s}.mo-wipe i:nth-child(3){top:80%;animation-delay:.6s}
+@keyframes moLine{from{left:100%}to{left:-8%}}
+.mo-k{display:flex;align-items:baseline;gap:8px}
+.mo-k b{font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.mo-k span{font-size:20px;font-weight:600;opacity:.85}
+.mo-t{font-size:17px;font-weight:600;text-align:center;max-width:320px;opacity:0;animation:stagIn .5s 1.6s forwards}
+
+/* Avant / après */
+.ba{position:relative;height:250px;border-radius:24px;overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow);user-select:none;touch-action:pan-y}
+.ba-l{position:absolute;inset:0}
+.ba-l img{width:100%;height:100%;object-fit:cover}
+.ba-l.a{background:linear-gradient(135deg,#F6D9B8,#F0A77A)}
+.ba-l.b{background:linear-gradient(135deg,#D8F3E6,#A7E6C8)}
+.ba-l.ph.img-fallback::after{font-size:96px}
+.ba-l.a.ph.img-fallback::after{filter:saturate(1.2)}
+.ba-tag{position:absolute;top:12px;z-index:2;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:rgba(22,37,30,.75);color:#fff}
+.ba-tag.a{right:12px}.ba-tag.b{left:12px;background:#fff;color:var(--emerald-d)}
+.ba-line{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;background:#fff;z-index:2;box-shadow:0 0 12px rgba(0,0,0,.35);pointer-events:none}
+.ba-line span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;color:var(--emerald-d);display:grid;place-items:center;font-weight:700;box-shadow:var(--shadow)}
+.ba-k{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:2;background:rgba(22,37,30,.82);color:#fff;padding:7px 14px;border-radius:14px;font-size:13px;font-weight:600;white-space:nowrap;transition:background .3s}
+.ba.healthy .ba-k{background:var(--emerald)}
+.ba-k b{font-size:20px;font-variant-numeric:tabular-nums}
+.ba input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;z-index:3;margin:0}
+
+/* Équivalences */
+.equiv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.equiv > b{grid-column:1 / -1;font-size:14px;font-weight:700;margin:2px 2px 0}
+.equiv div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 6px;text-align:center}
+.equiv span{font-size:24px;display:block;line-height:1.1}
+.equiv em{display:block;font-style:normal;font-weight:700;font-size:15px;color:var(--emerald-d);margin-top:4px}
+.equiv small{display:block;font-size:11px;color:var(--muted);line-height:1.25}
+.fit-eq{flex-basis:100%;font-size:12px;color:var(--ink-2);font-weight:500;text-align:center;margin-top:2px}
+.day-fit{flex-wrap:wrap}
+
+/* Note A-E */
+.grade{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;color:#fff;font-weight:700;font-size:15px}
+.grade.sm{width:22px;height:22px;font-size:12px;border-radius:7px;vertical-align:middle}
+.gA{background:#038141}.gB{background:#85BB2F}.gC{background:#F2B200}.gD{background:#EE8100}.gE{background:#E63E11}
+.grade-row{display:flex;align-items:center;justify-content:center;gap:10px}
+.grade-row > div{text-align:center}
+.grade-row small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-top:6px}
+.grade-arrow{font-size:22px;color:var(--emerald)}
+.gscale{display:inline-flex;gap:2px}
+.gscale i{font-style:normal;width:22px;height:30px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px;border-radius:6px;opacity:.35}
+.gscale i.on{opacity:1;transform:scale(1.28);z-index:1;box-shadow:0 4px 10px rgba(0,0,0,.25);border-radius:8px}
+.day-fit .grade{width:26px;height:26px;font-size:14px;color:#fff;display:inline-grid;margin:0 auto}
+
+/* Confettis */
+.confetti{position:absolute;inset:0;z-index:96;pointer-events:none;width:100%;height:100%}
+.confetti[hidden]{display:none}
+
+/* Anneaux d'activité */
+.rings{transform:rotate(-90deg)}
+.rings circle{fill:none}
+.rings .rt{opacity:.16}
+.rings .rb{stroke-linecap:round;transition:stroke-dashoffset 1.4s var(--ease)}
+.dash-ring.r3{width:92px;height:92px}
+.dash-legend{display:grid;gap:3px;margin-top:6px}
+.dash-legend span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-legend i{width:8px;height:8px;border-radius:50%;flex:none}
+.quick-grid.q8{grid-template-columns:repeat(4,minmax(0,1fr))}
+.quick-grid.q8 button{padding:11px 2px;font-size:11.5px}
+.quick-grid.q8 button.hot{background:linear-gradient(150deg,var(--pastel-2),var(--card));border-color:var(--mint)}
+
+/* Mode cuisine : voix */
+.cook-x.mic.on{background:var(--emerald);border-color:var(--emerald);animation:micPulse 1.4s infinite}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(14,159,110,.5)}100%{box-shadow:0 0 0 14px rgba(14,159,110,0)}}
+.cook-voice{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--emerald-dd);background:var(--pastel-2);border:1px solid var(--pastel);border-radius:14px;padding:9px 12px;animation:panelIn .3s var(--ease)}
+.cook-voice[hidden]{display:none}
+.mic-dot{width:9px;height:9px;border-radius:50%;background:var(--coral);flex:none;animation:pulse 1.2s infinite}
+
+/* Coach IA */
+#s-coach{padding-bottom:0}
+.coach-msgs{flex:1;display:flex;flex-direction:column;gap:10px;padding:4px 0 16px}
+.cm{display:flex;gap:8px;align-items:flex-end;animation:panelIn .35s var(--ease)}
+.cm.me{justify-content:flex-end}
+.cm-av{width:32px;height:32px;border-radius:50%;background:var(--pastel);display:grid;place-items:center;font-size:17px;flex:none}
+.cm-b{max-width:84%;background:var(--card);border:1px solid var(--line);border-radius:18px 18px 18px 6px;padding:11px 13px;font-size:14px;line-height:1.45;color:var(--ink)}
+.cm.me .cm-b{background:var(--emerald);color:#fff;border-color:var(--emerald);border-radius:18px 18px 6px 18px}
+.cm-card{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--pastel-2);border:1px solid var(--pastel);border-radius:14px;padding:9px 10px;margin-top:8px;transition:transform .2s var(--ease)}
+.cm-card:active{transform:scale(.98)}
+.cm-card > span{font-size:26px}
+.cm-card div{flex:1;min-width:0}
+.cm-card b{display:block;font-size:13.5px;font-weight:600;line-height:1.3}
+.cm-card small{display:block;font-size:11.5px;color:var(--muted)}
+.cm-card em{font-style:normal;color:var(--emerald-d);font-size:18px}
+.cm-note{display:block;font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.typing{display:flex;gap:4px;padding:14px 16px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:typing 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.coach-bottom{position:sticky;bottom:0;margin:0 -22px;padding:8px 22px 16px;background:linear-gradient(transparent,var(--bg) 22%)}
+.coach-sugg{margin:0 -22px 8px;padding:2px 22px 2px}
+.coach-form{display:flex;gap:8px;align-items:center}
+.coach-form input{flex:1;min-width:0;height:50px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:14.5px;padding:0 14px;outline:0}
+.coach-form input:focus{border-color:var(--emerald)}
+.coach-form .btn{width:50px;height:50px;padding:0;flex:none;font-size:18px}
+.coach-mic{width:46px;height:50px;border-radius:16px;background:var(--card);border:1.5px solid var(--line);font-size:19px;flex:none}
+.coach-mic[hidden]{display:none}
+.coach-mic.on{background:var(--emerald);border-color:var(--emerald);animation:micPulse 1.4s infinite}
+
+/* Mon bilan (story) */
+.wrapped{position:absolute;inset:0;z-index:88;color:#fff;overflow:hidden;display:flex;flex-direction:column;transition:background .6s}
+.wrapped[hidden]{display:none}
+.wrapped.in{animation:moIn .35s ease}
+.wrapped.out{animation:moOut .3s ease forwards}
+.wrapped.g1{background:radial-gradient(120% 90% at 20% 10%,#2BC48F,#08704D 60%,#053F2C)}
+.wrapped.g2{background:radial-gradient(120% 90% at 80% 10%,#6AA7F0,#3B4FC4 60%,#1E2470)}
+.wrapped.g3{background:radial-gradient(120% 90% at 50% 0%,#F3B54A,#E0742A 55%,#8A2E12)}
+.wrapped.g4{background:radial-gradient(120% 90% at 20% 90%,#A78BFA,#6D28D9 60%,#2E1065)}
+.wrapped.g5{background:radial-gradient(120% 90% at 80% 80%,#F08A6C,#C2553A 55%,#5C1F12)}
+.wrapped.g6{background:radial-gradient(120% 90% at 50% 20%,#FB923C,#DC2626 60%,#450A0A)}
+.wrapped.g7{background:radial-gradient(120% 90% at 30% 20%,#FDE68A,#D97706 55%,#78350F)}
+.wrapped.g8{background:radial-gradient(120% 90% at 50% 10%,#2BC48F,#0E9F6E 50%,#053F2C)}
+.wr-bars{display:flex;gap:4px;padding:16px 16px 0;position:relative;z-index:3}
+.wr-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.3);overflow:hidden}
+.wr-bars i span{display:block;height:100%;width:0;background:#fff}
+.wr-bars i.done span{width:100%}
+.wr-bars i.run span{animation:wrBar linear forwards}
+@keyframes wrBar{to{width:100%}}
+.wr-x{position:absolute;top:28px;right:14px;z-index:4;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:16px}
+.wr-slide{pointer-events:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 28px 60px;position:relative;z-index:2}
+.wr-slide > *{opacity:0}
+.wr-slide.anim > *{animation:wrUp .6s var(--ease) forwards}
+.wr-slide.anim > *:nth-child(2){animation-delay:.12s}.wr-slide.anim > *:nth-child(3){animation-delay:.24s}.wr-slide.anim > *:nth-child(4){animation-delay:.5s}.wr-slide.anim > *:nth-child(5){animation-delay:.8s}.wr-slide.anim > *:nth-child(6){animation-delay:1s}
+@keyframes wrUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.wr-slide small{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;opacity:.85}
+.wr-slide h2{font-family:var(--display);font-size:64px;font-weight:700;line-height:1.05;margin:10px 0 6px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.wr-slide h2.sm{font-size:28px}
+.wr-slide p{font-size:17px;opacity:.9}
+.wr-e{font-size:72px;line-height:1;margin:8px 0}
+.wr-e.big{font-size:110px;animation:bbPop .8s var(--ease)}
+.wr-eq{display:flex;align-items:center;gap:10px;margin-top:22px;background:rgba(255,255,255,.16);padding:12px 18px;border-radius:18px;font-size:17px}
+.wr-eq span{font-size:30px}
+.wr-foot{margin-top:16px;font-size:15px;opacity:.85}
+.wr-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:300px;margin:14px 0}
+.wr-badges span{font-size:30px;width:52px;height:52px;display:grid;place-items:center;background:rgba(255,255,255,.16);border-radius:16px}
+.wr-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:320px;margin:16px 0 18px}
+.wr-sum div{background:rgba(255,255,255,.16);border-radius:18px;padding:14px 8px}
+.wr-sum b{display:block;font-size:24px;font-weight:700}
+.wr-sum span{font-size:13px;opacity:.85}
+.wr-share{background:#fff;color:var(--emerald-d);max-width:320px;position:relative;z-index:5}
+.wr-again{margin-top:12px;color:#fff;opacity:.85;font-weight:600;position:relative;z-index:5}
+.wr-tap{position:absolute;top:70px;bottom:0;width:34%;z-index:1}
+.wr-tap.l{left:0}.wr-tap.r{right:0;width:66%}
+
+/* Widget écran verrouillé */
+.lock{position:relative;border-radius:28px;padding:22px 16px 18px;margin-bottom:14px;color:#fff;text-align:center;background:radial-gradient(120% 100% at 30% 0%,#4F7CAC,#2C3E64 50%,#151B2E);overflow:hidden}
+.lock-date{font-size:14px;font-weight:600;opacity:.85}
+.lock-time{font-size:64px;font-weight:600;line-height:1.05;letter-spacing:-.02em}
+.lock-widgets{display:grid;grid-template-columns:1fr 1.2fr;gap:8px;margin-top:14px;text-align:left}
+.lw{background:rgba(255,255,255,.16);backdrop-filter:blur(10px);border-radius:20px;padding:10px 12px}
+.lw.ring{display:flex;align-items:center;gap:8px}
+.lw.ring b{display:block;font-size:17px}
+.lw small{display:block;font-size:11px;opacity:.8}
+.lw.meal b{display:block;font-size:13px;line-height:1.3;margin-top:3px}
+.lw.meal em{display:block;font-style:normal;font-size:11px;opacity:.8;margin-top:3px}
+.lw .rings .rt{opacity:.25}
+
+/* Notification simulée */
+.fake-notif{position:absolute;left:12px;right:12px;top:12px;z-index:97;display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:22px;background:rgba(250,248,243,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 40px -16px rgba(0,0,0,.45);color:var(--ink);cursor:pointer;transform:translateY(-130%)}
+html[data-theme="dark"] .fake-notif{background:rgba(30,40,35,.94)}
+.fake-notif[hidden]{display:none}
+.fake-notif.in{animation:notifIn .55s var(--ease) forwards}
+.fake-notif.out{animation:notifOut .35s ease forwards}
+@keyframes notifIn{from{transform:translateY(-130%)}to{transform:none}}
+@keyframes notifOut{from{transform:none}to{transform:translateY(-130%)}}
+.fake-notif img{width:40px;height:40px;border-radius:11px;flex:none}
+.fake-notif div{flex:1;min-width:0}
+.fake-notif b{display:block;font-size:13.5px}
+.fake-notif span{display:block;font-size:13px;color:var(--ink-2);line-height:1.35}
+.fake-notif small{font-size:11px;color:var(--muted);align-self:flex-start}
+
+/* Code-barres */
+.bc-cam{position:relative;height:220px;border-radius:24px;overflow:hidden;background:#111;margin-top:4px}
+.bc-cam video{width:100%;height:100%;object-fit:cover;display:none}
+.bc-cam.live video{display:block}
+.bc-ph{position:absolute;inset:0;display:grid;place-items:center;font-size:44px;opacity:.5}
+.bc-cam.live .bc-ph{display:none}
+.bc-frame{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:3px solid rgba(255,255,255,.9);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.bc-frame i{position:absolute;left:4%;right:4%;top:50%;height:2px;background:#F03E3E;box-shadow:0 0 10px #F03E3E;animation:bcScan 1.6s ease-in-out infinite alternate}
+@keyframes bcScan{from{top:12%}to{top:88%}}
+.bc-status{text-align:center;font-size:13px;font-weight:600;color:var(--ink-2);margin:10px 0}
+.bc-load{display:flex;align-items:center;gap:10px;justify-content:center;font-size:13.5px;color:var(--ink-2);margin:18px 0}
+.bc-card{padding:16px;margin-top:16px;animation:panelIn .4s var(--ease)}
+.bc-top{display:flex;gap:12px;align-items:center}
+.bc-top img{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;flex:none}
+.bc-e{font-size:44px;width:64px;text-align:center;flex:none}
+.bc-top b{display:block;font-size:16px;font-weight:700}
+.bc-top small{display:block;font-size:12.5px;color:var(--muted)}
+.bc-ns{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;margin-top:6px}
+.bc-nut{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:14px 0 6px}
+.bc-nut div{background:var(--bg-2);border-radius:12px;padding:8px 4px;text-align:center}
+.bc-nut b{display:block;font-size:14px;font-weight:700}
+.bc-nut span{font-size:10.5px;color:var(--muted);font-weight:600}
+
+.wr-slide button{pointer-events:auto}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -1839,6 +2065,7 @@ Splash.boot();
           <button class="icon-btn sm" data-action="jDay" data-d="1" aria-label="Jour suivant">›</button>
         </div>
         <div id="jSummary"></div>
+        <button class="btn btn-soft" data-action="openWrapped" style="margin-top:12px">🎁 Voir mon bilan du mois</button>
         <div class="section-title">Mes repas <button class="link-btn" data-action="pickFor" data-for="journal">＋ Ajouter</button></div>
         <div id="jList"></div>
         <div class="section-title">Ma semaine</div>
@@ -1974,6 +2201,42 @@ Splash.boot();
         <article class="card legal" id="legalBody"></article>
       </section>
 
+      <!-- ===================== Coach IA ===================== -->
+      <section class="screen" id="s-coach" aria-label="Coach IA">
+        <div class="topbar">
+          <button class="icon-btn" data-action="back" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="topbar-title">🤖 Coach IA</div>
+          <span style="width:44px"></span>
+        </div>
+        <div class="coach-msgs" id="coachMsgs"></div>
+        <div class="coach-bottom">
+          <div class="chips coach-sugg" id="coachSugg"></div>
+          <form class="coach-form" id="coachForm" autocomplete="off">
+            <button type="button" class="coach-mic" id="coachMicBtn" data-action="coachMic" aria-label="Parler au coach">🎙️</button>
+            <input id="coachInput" type="text" placeholder="Ex. j'ai 15 min et des œufs" aria-label="Écris au coach">
+            <button class="btn btn-primary" type="submit" aria-label="Envoyer">➤</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ===================== Code-barres ===================== -->
+      <section class="screen" id="s-barcode" aria-label="Scanner un code-barres">
+        <div class="topbar">
+          <button class="icon-btn" data-action="back" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="topbar-title">Scanner un produit</div>
+          <span style="width:44px"></span>
+        </div>
+        <div class="bc-cam" id="bcCam"><video id="bcVideo" playsinline muted></video><span class="bc-frame"><i></i></span><span class="bc-ph">📷</span></div>
+        <p class="bc-status" id="bcStatus">Vise le code-barres d'un produit</p>
+        <form class="add-creator" id="bcForm" autocomplete="off">
+          <input id="bcCode" type="text" inputmode="numeric" placeholder="Ou saisis le code (ex. 3017620422003)" aria-label="Code-barres">
+          <button class="btn btn-primary" type="submit">OK</button>
+        </form>
+        <div class="set-title">Produits d'exemple</div>
+        <div class="chips wrap" id="bcExamples"></div>
+        <div id="bcResult"></div>
+      </section>
+
     </div>
 
     <!-- Bottom nav -->
@@ -2045,8 +2308,10 @@ Splash.boot();
       <div class="cook-top">
         <button class="cook-x" data-action="cookClose" aria-label="Quitter le mode cuisine">✕</button>
         <div class="cook-title"><small>Mode cuisine</small><b id="cookName"></b></div>
+        <button class="cook-x mic" id="cookMic" data-action="cookMic" aria-label="Commande vocale">🎙️</button>
         <button class="cook-x" data-action="cookIng" aria-label="Voir les ingrédients">🧾</button>
       </div>
+      <div class="cook-voice" id="cookVoice" hidden></div>
       <div class="cook-prog"><span id="cookProg"></span></div>
       <div class="cook-body" id="cookBody"></div>
       <div class="cook-ings" id="cookIngs" hidden></div>
@@ -2062,6 +2327,14 @@ Splash.boot();
       <span>✨ Nouvelle version disponible</span>
       <button data-action="applyUpdate">Mettre à jour</button>
     </div>
+
+    <!-- Transformation original → healthy -->
+    <div class="morph" id="morph" data-action="morphSkip" hidden></div>
+    <!-- Mon bilan (story) -->
+    <div class="wrapped" id="wrapped" hidden></div>
+    <!-- Notification simulée -->
+    <div class="fake-notif" id="fakeNotif" data-action="fakeNotifOpen" hidden></div>
+    <canvas class="confetti" id="confetti" hidden></canvas>
 
     <div class="toast" id="toast"></div>
   </main>
@@ -5346,7 +5619,7 @@ $('#libSearch').addEventListener('input', e => { state.libQuery = e.target.value
 
 function openRecipe(k, lvl){
   if(!DISHES[k]){ toast('Recette introuvable (supprimée ?)'); return; }
-  closeSheet();
+  closeSheet(); state.morph = false;
   state.dish = k; state.level = lvl; state.photo = null; state.fileName = null; state.source = 'library';
   showResult();
 }
@@ -5630,7 +5903,9 @@ function startAnalysis(pending){
   go('s-loading');
   const total = 4200, C = 678.6, t0 = performance.now();
   const checks = $$('#checklist .check');
-  let lastIdx = -1, outcome = null, doneAt = 0, from = 0, prog = 0, announced = false;
+  let lastIdx = -1, outcome = null, doneAt = 0, from = 0, prog = 0, announced = false, tagsShown = false;
+  state.morph = false;
+  $$('#s-loading .stag').forEach(x => x.remove());
   if(pending) pending.then(o => { outcome = o; }, err => { outcome = { type:'error', err }; });
   const ease = x => 1 - Math.pow(1 - Math.min(1, x), 2.2);
   function frame(now){
@@ -5659,10 +5934,11 @@ function startAnalysis(pending){
       setTimeout(()=>{ sub.textContent = txt; sub.style.opacity = 1; },150);
       lastIdx = idx;
     }
+    if(!tagsShown && (found || (!pending && prog > .28))){ tagsShown = true; scanTags(found ? outcome.ai : null); }
     if(prog < 1) requestAnimationFrame(frame);
     else {
       checks.forEach(c=>{ c.classList.remove('run'); c.classList.add('done'); });
-      setTimeout(()=>{ if(token !== state.loadToken) return; pending ? applyAiOutcome(outcome) : showResult(); }, 450);
+      setTimeout(()=>{ if(token !== state.loadToken) return; state.morph = true; pending ? applyAiOutcome(outcome) : showResult(); }, 650);
     }
   }
   requestAnimationFrame(frame);
@@ -5785,6 +6061,7 @@ function renderCompare(d, r){
   const score = Math.min(98, Math.round(50 + (1 - r.kcal/o.kcal)*60 + (r.p/o.p - 1)*25 + (1 - r.f/o.f)*15));
   const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   $('#p-compare').innerHTML = `
+    ${d.noCompare ? '' : beforeAfterHTML(d, r)}
     <div class="vs reveal">
       <div class="vs-card orig"><div class="ph" data-emoji="${d.emoji}"><img src="${origImg}" alt="Plat original" onerror="imgFail(this)"></div>
         <div class="cap"><small>Original</small><b>${o.label}</b><div class="k">${d.estimate?'≈ ':''}${o.kcal} <small>kcal</small></div></div></div>
@@ -5797,6 +6074,8 @@ function renderCompare(d, r){
       <div><b>${r.p - o.p >= 0 ? '+' : ''}${r.p - o.p} g</b><span>de protéines</span></div>
       <div><b>−${o.f - r.f} g</b><span>de lipides</span></div>
     </div>
+    ${equivHTML(o.kcal - r.kcal)}
+    ${gradeHTML(d, r)}
     <div class="card block reveal d2">
       <h3>Calories & macros</h3>
       <div class="legend"><span><i style="background:var(--coral)"></i>Original</span><span><i style="background:var(--emerald)"></i>Healthy</span></div>
@@ -5824,6 +6103,7 @@ function renderCompare(d, r){
 
 function showResult(){
   SERV.n = 1;
+  if(state.morph){ state.morph = false; setTimeout(playMorph, 60); }
   state.tab = 'recipe'; setTab('recipe');
   ['kcal','p','c','f'].forEach(k=>{ const el=$('#m-'+k); if(el) el.dataset.v = 0; });
   go('s-result');
@@ -5838,6 +6118,7 @@ function setTab(t){
   pr.classList.toggle('on', t==='recipe'); pc.classList.toggle('on', t==='compare');
   pr.classList.toggle('from-l', t==='recipe'); pc.classList.toggle('from-r', t==='compare');
   if(t==='compare'){
+    setTimeout(baIntro, 250);
     $$('#p-compare .tr span').forEach(s=>s.style.width='0');
     requestAnimationFrame(()=>requestAnimationFrame(()=>$$('#p-compare .tr span').forEach(s=>s.style.width=s.dataset.w+'%')));
   }
@@ -6407,7 +6688,7 @@ const AUTH_MSG = {
 async function api(method, path, body){
   if((ACCT.session && String(ACCT.session.token).startsWith('demo_')) || DEMO.on) return demoApi(method, path, body);
   try{ return await serverApi(method, path, body); }
-  catch(e){ if(DEMO_CODES.includes(e.code) && !ACCT.session) return demoApi(method, path, body); throw e; }
+  catch(e){ if(DEMO_CODES.includes(e.code) && !ACCT.session){ if(e.code !== 'network') DEMO.on = true; return demoApi(method, path, body); } throw e; }
 }
 async function serverApi(method, path, body){
   const base = AI.url;
@@ -6805,7 +7086,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-7';
+const APP_VERSION = '2026.11.26-8';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -7110,10 +7391,13 @@ function cookMove(d){
   const n = COOK.steps.length;
   if(d > 0 && COOK.i >= n){ cookClose(); return; }
   COOK.i = Math.max(0, Math.min(n, COOK.i + d));
-  if(COOK.i === n){ PLUS.stats.cooked++; savePlus(); }
+  if(COOK.i === n){ PLUS.stats.cooked++; savePlus(); confetti(80); }
   renderCook(d); buzz(8);
+  if(VOICE.on) readStep();
 }
 function cookClose(){
+  if(VOICE.on) voiceOff();
+  try{ speechSynthesis.cancel(); }catch(_){}
   const c = $('#cook'); c.classList.remove('in'); c.classList.add('out');
   setTimeout(() => { c.hidden = true; c.classList.remove('out'); }, 260);
   keepAwake(false);
@@ -7268,12 +7552,15 @@ function dayTotals(iso){
   return (PLUS.journal[iso] || []).reduce((a, x) => ({ kcal:a.kcal + x.kcal, p:a.p + x.p, c:a.c + x.c, f:a.f + x.f, saved:a.saved + (x.saved || 0) }), { kcal:0, p:0, c:0, f:0, saved:0 });
 }
 function dayFitHTML(r){
-  const t = targets();
+  const t = targets(), d = DISHES[state.dish];
   const pk = Math.round(r.kcal / t.kcal * 100), pp = Math.round(r.p / t.p * 100);
+  const saved = d ? d.original.kcal - r.kcal : 0;
   return `<div class="day-fit reveal">
     <div><b>${pk} %</b><span>de tes calories du jour</span></div>
     <div><b>${pp} %</b><span>de tes protéines du jour</span></div>
-    ${t.set ? '' : '<button class="link-btn" data-action="nutriSheet">Personnaliser ›</button>'}
+    <div><b>${gradeBadge(gradeOf(r.kcal, r.p, r.c, r.f))}</b><span>note nutrition</span></div>
+    ${saved > 30 && !d.noCompare ? `<span class="fit-eq">💚 −${fmtNum(saved)} kcal vs l'original = 🏃 ${Math.round(saved / 11)} min de course évitées</span>` : ''}
+    ${t.set ? '' : '<button class="link-btn" data-action="nutriSheet" style="flex-basis:100%;justify-content:center">🎯 Personnaliser selon mon profil ›</button>'}
   </div>`;
 }
 function nutriSheet(){
@@ -7336,10 +7623,13 @@ function refreshAfterPlus(){
 const JOURNAL = { day: isoDay() };
 function addToJournal(k, l, day = isoDay()){
   const s = snapOf(k, l); if(!s) return;
+  const before = dayTotals(day), goal = targets();
   (PLUS.journal[day] = PLUS.journal[day] || []).push({ id:uid(), ...s, t:Date.now() });
   savePlus(); buzz(15);
   const t = dayTotals(day), tg = targets();
   toast(`✅ Ajouté · ${fmtNum(t.kcal)} / ${fmtNum(tg.kcal)} kcal aujourd'hui`);
+  if(before.p < goal.p && t.p >= goal.p){ setTimeout(() => { toast('💪 Objectif protéines du jour atteint !'); confetti(120); }, 600); }
+  else if(before.kcal < goal.kcal * .9 && t.kcal >= goal.kcal * .9 && t.kcal <= goal.kcal * 1.08){ setTimeout(() => { toast('🎯 Objectif calories du jour atteint !'); confetti(120); }, 600); }
   refreshPlusUI();
 }
 function streak(){
@@ -7415,7 +7705,7 @@ function checkBadges(){
     if(!PLUS.badges[id] && (() => { try{ return BADGES.find(b => b[0] === id)[4](); }catch(_){ return false; } })()){
       PLUS.badges[id] = Date.now();
       try{ localStorage.setItem('hr-plus', JSON.stringify(PLUS)); }catch(_){}
-      setTimeout(() => { toast(`${e} Badge débloqué : ${t} !`); buzz([30, 40, 30]); }, 900);
+      setTimeout(() => { toast(`${e} Badge débloqué : ${t} !`); buzz([30, 40, 30]); confetti(110); }, 900);
     }
   });
 }
@@ -7486,23 +7776,29 @@ function renderHomeDash(){
   const next = new Date().getHours() < 14 ? (plan.midi || plan.soir) : plan.soir;
   box.innerHTML = `
     <button class="dash card" data-action="openJournal">
-      <div class="dash-ring">${ringSVG(t.kcal / tg.kcal, 84, 9)}<div><b>${fmtNum(t.kcal)}</b><span>kcal</span></div></div>
+      <div class="dash-ring r3">${ringsSVG([t.kcal / tg.kcal, t.p / tg.p, Math.min(3, (PLUS.journal[today] || []).length) / 3], 92)}</div>
       <div class="dash-tx">
-        <small>Mon suivi du jour</small>
+        <small>Mon suivi du jour${st ? ` · 🔥 ${st} j` : ''}</small>
         <b>${t.kcal ? `${fmtNum(Math.max(0, tg.kcal - t.kcal))} kcal restantes` : 'Note ton premier repas'}</b>
-        <span class="dash-p"><i style="width:${Math.min(100, t.p / tg.p * 100)}%"></i></span>
-        <span class="dash-meta">💪 ${Math.round(t.p)} / ${tg.p} g prot.${st ? ` · 🔥 ${st} j` : ''}${saved ? ` · 💚 −${fmtNum(saved)} kcal` : ''}</span>
+        <div class="dash-legend">
+          <span><i style="background:#0E9F6E"></i>${fmtNum(t.kcal)} / ${fmtNum(tg.kcal)} kcal</span>
+          <span><i style="background:#4F8FE8"></i>${Math.round(t.p)} / ${tg.p} g de protéines</span>
+          <span><i style="background:#F3A83A"></i>${(PLUS.journal[today] || []).length} / 3 repas${saved ? ` · 💚 −${fmtNum(saved)} kcal` : ''}</span>
+        </div>
       </div>
     </button>
     ${next ? `<button class="dash-next" data-action="openRecipe" data-dish="${esc(next.k)}" data-level="${next.l}"><span>${next.emoji}</span><div><small>Au menu ${plan.midi === next ? 'ce midi' : 'ce soir'}</small><b>${esc(next.name)}</b></div><em>›</em></button>` : ''}
-    <div class="quick-grid">
+    <div class="quick-grid q8">
+      <button class="hot" data-action="openCoach"><span>🤖</span>Coach IA</button>
+      <button class="hot" data-action="openWrapped"><span>🎁</span>Mon bilan</button>
+      <button data-action="openBarcode"><span>🏷️</span>Code-barres</button>
       <button data-action="randomSheet"><span>🎲</span>Au hasard</button>
       <button data-action="openFridge"><span>🧊</span>Mon frigo</button>
       <button data-action="openPlan"><span>📅</span>Planning</button>
       <button data-action="openShop"><span>🛒</span>Courses${shopLeft ? `<i>${shopLeft}</i>` : ''}</button>
-      <button data-action="openMine"><span>📝</span>Mes recettes</button>
-      <button data-action="openJournal"><span>🏅</span>Badges</button>
+      <button data-action="openMine"><span>📝</span>Recettes</button>
     </div>`;
+  animateRings(box);
 }
 
 /* =====================================================================
@@ -8175,6 +8471,10 @@ function plusSettingsHTML(){
   const dietTxt = avoid.length ? [DIETS.find(d => d[0] === PLUS.diet.type)[1], ...PLUS.diet.excl.map(t => 'sans ' + TAG_LABEL[t].toLowerCase())].filter(x => x !== 'Aucun').join(', ') : 'Aucun';
   return `<div class="set-title">Mon suivi</div>
     <div class="set-group">
+      ${row('🤖', 'Coach IA', 'Une idée de repas en une phrase', CHEV, 'data-action="openCoach"')}
+      ${row('🎁', 'Mon bilan du mois', 'Ton récap animé, à partager', CHEV, 'data-action="openWrapped"')}
+      ${row('🏷️', 'Scanner un code-barres', 'L\'alternative healthy d\'un produit', CHEV, 'data-action="openBarcode"')}
+      ${row('📲', 'Widget & notifications', 'Écran verrouillé et rappel du midi', CHEV, 'data-action="widgetSheet"')}
       ${row('🎯', 'Mes besoins du jour', tg.set ? `${fmtNum(tg.kcal)} kcal · ${tg.p} g de protéines` : 'Calcule tes calories et protéines', CHEV, 'data-action="nutriSheet"')}
       ${row('🛡️', 'Régime & allergies', esc(cap(dietTxt)), CHEV, 'data-action="dietSheet"')}
       ${row('📓', 'Mon journal & mes badges', `${mealsCount()} repas notés`, CHEV, 'data-action="openJournal"')}
@@ -8266,11 +8566,20 @@ const PLUS_ACTIONS = {
   forgotAgain: () => forgotSheet(1),
   googleDemo: () => googleDemoSheet(), googleDemoPick: el => googleDemoPick(el),
   presSheet: () => presSheet(),
+  cookMic: () => voiceToggle(),
+  openCoach: () => coachOpen(), coachSay: el => coachSay(el.dataset.q), coachMic: () => coachMic(),
+  openWrapped: () => wrappedOpen(), wrClose: () => wrClose(), wrNext: () => WR.i < WR.slides.length - 1 ? wrShow(WR.i + 1) : wrClose(), wrPrev: () => wrShow(WR.i - 1),
+  wrShare: () => wrShare(), wrAgain: () => wrShow(0),
+  widgetSheet: () => widgetSheet(), notifDemo: () => notifDemo(),
+  fakeNotifOpen: el => { el.classList.add('out'); setTimeout(() => { el.hidden = true; }, 300); if(el.dataset.dish && DISHES[el.dataset.dish]){ closeSheet(); openRecipe(el.dataset.dish, +el.dataset.level); } },
+  openBarcode: () => bcOpen(), bcExample: el => { BC.last = ''; bcFound(el.dataset.code); },
+  morphSkip: () => closeMorph(),
   presSex: el => { PRES.sex = el.dataset.v; $$('#presSex .chip').forEach(c => c.classList.toggle('on', c === el)); }
 };
 
 /* ---------- Écrans : toujours à jour quand on y revient ---------- */
 function plusOnShow(id){
+  if(id !== 's-barcode') bcStop();
   const r = { 's-journal':renderJournal, 's-shop':renderShop, 's-plan':renderPlan, 's-mine':renderMine, 's-fridge':renderFridgeResults }[id];
   if(r) try{ r(); }catch(_){}
 }
@@ -8307,7 +8616,6 @@ function demoSession(db, email){ const t = 'demo_' + uid() + uid(); db.sessions[
 
 async function demoApi(method, path, body = {}){
   await new Promise(r => setTimeout(r, 350));   // petit délai réaliste
-  DEMO.on = true;
   const db = demoDB.get(), route = method + ' ' + path.split('?')[0];
   const email = String(body.email || '').trim().toLowerCase();
   if(route === 'POST /auth/signup'){
@@ -8532,7 +8840,6 @@ async function seedPresentation(name, sex, silent = false){
   // Compte connecté (mode démo, enregistré sur l'appareil)
   const email = (low(name).replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || 'alex') + '@healthyremake.app';
   const db = demoDB.get(); delete db.users[email]; demoDB.set(db);
-  DEMO.on = true;
   try{ localStorage.setItem('hr-pres', '1'); }catch(_){}
   const j = await demoApi('POST', '/auth/signup', { email, password:'Healthy2026', name });
   const db2 = demoDB.get(); db2.users[email].created = Date.now() - 64 * 86400000;
@@ -8565,6 +8872,538 @@ document.addEventListener('submit', async e => {
   try{ await seedPresentation(name, PRES.sex); closeSheet(); }
   catch(err){ busy(btn, false); formErr(e.target, 'Impossible de préparer la démo : ' + err.message); }
 });
+
+/* =====================================================================
+   Effets « waouh » : étiquettes du scan, transformation, avant/après,
+   équivalences, note A-E, confettis, anneaux d'activité
+   ===================================================================== */
+
+/* ---------- Étiquettes animées sur la photo pendant l'analyse ---------- */
+function scanTags(ai){
+  const box = $('#s-loading .scan'); if(!box) return;
+  box.querySelectorAll('.stag').forEach(x => x.remove());
+  const d = DISHES[state.dish] || DISHES.burger;
+  const names = (ai && Array.isArray(ai.detected) && ai.detected.length ? ai.detected : d.levels[0].ing.map(x => x[1])).slice(0, 5);
+  const total = (ai && ai.original && ai.original.kcal) || d.original.kcal || 600;
+  const w = names.map((_, i) => 5 - i + ((i * 7 + names.length) % 3) * .4), sum = w.reduce((a, b) => a + b, 0);
+  const spots = [['left:-34px', 'top:18px'], ['right:-40px', 'top:58px'], ['left:-42px', 'top:128px'], ['right:-30px', 'top:160px'], ['left:42px', 'top:212px']];
+  names.forEach((n, i) => {
+    const el = document.createElement('span');
+    el.className = 'stag';
+    el.style.cssText = spots[i].join(';') + `;animation-delay:${i * .38}s`;
+    const short = String(n).replace(/\s*\(.*?\)/g, '').split(/,| \+ /)[0].slice(0, 22);
+    el.innerHTML = `<i></i><b>${esc(short)}</b><em>≈ ${Math.round(total * w[i] / sum / 5) * 5} kcal</em>`;
+    box.appendChild(el);
+  });
+}
+
+/* ---------- Transformation : original → version healthy ---------- */
+function playMorph(){
+  const m = $('#morph'), d = DISHES[state.dish], r = d && d.levels[state.level];
+  if(!m || !r) return;
+  const o = d.original, imgA = state.photo || d.origImg;
+  m.innerHTML = `<div class="mo-stage">
+      <div class="mo-pane a ph" data-emoji="${d.emoji}"><img src="${imgA}" alt="" onerror="imgFail(this)"><span class="mo-lab">Original</span></div>
+      <div class="mo-pane b ph" data-emoji="🥗"><img src="${r.img && r.img !== 'data:,' ? r.img : d.origImg}" alt="" onerror="imgFail(this)"><span class="mo-lab h">Healthy</span></div>
+      <div class="mo-wipe"><i></i><i></i><i></i></div>
+    </div>
+    <div class="mo-k"><b id="moK">${o.kcal}</b><span>kcal</span></div>
+    <div class="mo-t">✨ ${esc(r.name)}</div>`;
+  m.hidden = false; m.classList.remove('out'); void m.offsetWidth; m.classList.add('go');
+  const k = $('#moK'), t0 = performance.now(), from = o.kcal, to = r.kcal;
+  (function step(now){
+    const p = Math.min(1, Math.max(0, (now - t0 - 650) / 1100));
+    k.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+    if(p < 1 && !m.hidden) requestAnimationFrame(step);
+  })(t0);
+  clearTimeout(m._t); m._t = setTimeout(closeMorph, 2700);
+  buzz([10, 40, 10]);
+}
+function closeMorph(){
+  const m = $('#morph'); if(!m || m.hidden) return;
+  m.classList.add('out'); clearTimeout(m._t);
+  setTimeout(() => { m.hidden = true; m.classList.remove('go', 'out'); confetti(70); }, 380);
+}
+
+/* ---------- Curseur avant / après (onglet Comparaison) ---------- */
+function beforeAfterHTML(d, r){
+  const o = d.original, imgA = state.photo || d.origImg, imgB = r.img && r.img !== 'data:,' ? r.img : d.origImg;
+  return `<div class="ba reveal" id="ba" data-a="${o.kcal}" data-b="${r.kcal}">
+    <div class="ba-l a ph" data-emoji="${d.emoji}"><img src="${imgA}" alt="Original" onerror="imgFail(this)"></div>
+    <div class="ba-l b ph" data-emoji="${d.emoji}" style="clip-path:inset(0 0 0 50%)"><img src="${imgB}" alt="Version healthy" onerror="imgFail(this)"></div>
+    <span class="ba-tag a">Original</span><span class="ba-tag b">Healthy</span>
+    <div class="ba-line" style="left:50%"><span>⇆</span></div>
+    <div class="ba-k"><b id="baK">${Math.round((o.kcal + r.kcal) / 2)}</b> kcal</div>
+    <input type="range" min="0" max="100" value="50" step="0.5" aria-label="Glisser pour comparer avant et après" id="baRange">
+  </div>`;
+}
+function baSet(v){
+  const ba = $('#ba'); if(!ba) return;
+  const a = +ba.dataset.a, b = +ba.dataset.b;
+  ba.querySelector('.ba-l.b').style.clipPath = `inset(0 0 0 ${v}%)`;
+  ba.querySelector('.ba-line').style.left = v + '%';
+  $('#baK').textContent = Math.round(b + (a - b) * v / 100);
+  ba.classList.toggle('healthy', v < 50);
+}
+document.addEventListener('input', e => { if(e.target.id === 'baRange') baSet(+e.target.value); });
+function baIntro(){
+  const rg = $('#baRange'); if(!rg) return;
+  const t0 = performance.now();
+  (function step(now){
+    const p = Math.min(1, (now - t0) / 1500), v = 100 - 100 * (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+    rg.value = p < 1 ? v : 15; baSet(p < 1 ? v : 15);
+    if(p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+/* ---------- Équivalences parlantes ---------- */
+function equivHTML(saved){
+  if(!(saved > 30)) return '';
+  const run = Math.round(saved / 11), walk = Math.round(saved / 4.5), donut = Math.max(1, Math.round(saved / 250));
+  return `<div class="equiv reveal"><b>−${fmtNum(saved)} kcal, c'est…</b>
+    <div><span>🏃</span><em>${run} min</em><small>de course évitées</small></div>
+    <div><span>🚶</span><em>${walk >= 60 ? Math.floor(walk / 60) + ' h ' + pad2(walk % 60) : walk + ' min'}</em><small>de marche</small></div>
+    <div><span>🍩</span><em>${donut} donut${donut > 1 ? 's' : ''}</em><small>en moins</small></div></div>`;
+}
+
+/* ---------- Note nutritionnelle A à E (inspirée du Nutri-Score) ---------- */
+function gradeOf(kcal, p, c, f){
+  if(!kcal) return 'C';
+  const kP = Math.min(6, Math.max(0, (kcal - 350) / 110));
+  const fP = Math.min(5, Math.max(0, (f * 9 / kcal - .28) * 22));
+  const pP = Math.min(6, (p * 4 / kcal) * 22);
+  const s = kP + fP - pP;
+  return s <= -2.5 ? 'A' : s <= 0 ? 'B' : s <= 2 ? 'C' : s <= 4 ? 'D' : 'E';
+}
+const gradeBadge = (g, sm) => `<span class="grade g${g} ${sm ? 'sm' : ''}">${g}</span>`;
+function gradeHTML(d, r){
+  const o = d.original, ga = gradeOf(o.kcal, o.p, o.c, o.f), gb = gradeOf(r.kcal, r.p, r.c, r.f);
+  return `<div class="card block grade-card reveal">
+    <h3>Note nutritionnelle <span class="count">de A à E</span></h3>
+    <div class="grade-row"><div>${gradeScale(ga)}<small>Original</small></div><span class="grade-arrow">→</span><div>${gradeScale(gb)}<small>Version healthy</small></div></div>
+    <p class="fx-note">Note HealthyRemake calculée d'après les calories, les lipides et les protéines par portion (inspirée du Nutri-Score, non officielle).</p>
+  </div>`;
+}
+const gradeScale = g => `<span class="gscale">${'ABCDE'.split('').map(x => `<i class="g${x} ${x === g ? 'on' : ''}">${x}</i>`).join('')}</span>`;
+
+/* ---------- Confettis ---------- */
+function confetti(n = 120){
+  if(PREFS.reduceMotion) return;
+  const cv = $('#confetti'); if(!cv) return;
+  const app = $('.app').getBoundingClientRect();
+  cv.width = app.width; cv.height = app.height; cv.hidden = false;
+  const x = cv.getContext('2d'), cols = ['#0E9F6E', '#A7E6C8', '#F3B54A', '#F08A6C', '#6AA7F0', '#ffffff'];
+  const P = Array.from({ length:n }, () => ({ x:app.width / 2 + (Math.random() - .5) * 80, y:app.height * .38, vx:(Math.random() - .5) * 9, vy:-Math.random() * 11 - 4, r:Math.random() * 6 + 4, c:cols[Math.floor(Math.random() * cols.length)], a:Math.random() * 6, va:(Math.random() - .5) * .3 }));
+  const t0 = performance.now();
+  (function step(now){
+    x.clearRect(0, 0, cv.width, cv.height);
+    P.forEach(p => { p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va;
+      x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); x.restore(); });
+    if(now - t0 < 2600) requestAnimationFrame(step); else { x.clearRect(0, 0, cv.width, cv.height); cv.hidden = true; }
+  })(t0);
+}
+
+/* ---------- Anneaux d'activité (accueil) ---------- */
+function ringsSVG(vals, size = 92){
+  const cols = ['#0E9F6E', '#4F8FE8', '#F3A83A'], c = size / 2, sw = size * .085;
+  return `<svg class="rings" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${vals.map((v, i) => {
+    const r = c - sw / 2 - i * (sw + 3), L = 2 * Math.PI * r, off = L * (1 - Math.min(1, v));
+    return `<circle cx="${c}" cy="${c}" r="${r}" stroke-width="${sw}" class="rt" stroke="${cols[i]}"/><circle cx="${c}" cy="${c}" r="${r}" stroke-width="${sw}" stroke="${cols[i]}" class="rb" stroke-dasharray="${L.toFixed(1)}" stroke-dashoffset="${L.toFixed(1)}" data-off="${off.toFixed(1)}"/>`;
+  }).join('')}</svg>`;
+}
+function animateRings(root){
+  requestAnimationFrame(() => requestAnimationFrame(() => (root || document).querySelectorAll('.rings .rb').forEach(c => c.style.strokeDashoffset = c.dataset.off)));
+}
+
+/* =====================================================================
+   Assistant vocal du mode cuisine + coach IA (conversation)
+   ===================================================================== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const VOICE = { on:false, rec:null, last:'' };
+let FR_VOICE = null;
+function pickVoice(){ try{ const vs = speechSynthesis.getVoices(); FR_VOICE = vs.find(v => /^fr(-|_)FR/i.test(v.lang)) || vs.find(v => /^fr/i.test(v.lang)) || null; }catch(_){} }
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'fr-FR'; u.rate = 1.03; if(FR_VOICE) u.voice = FR_VOICE;
+    speechSynthesis.speak(u);
+  }catch(_){}
+}
+function voiceBubble(txt, heard){
+  const b = $('#cookVoice'); if(!b) return;
+  b.hidden = !txt; b.innerHTML = txt ? `<span class="mic-dot"></span>${heard ? `« ${esc(txt)} »` : esc(txt)}` : '';
+}
+function readStep(){
+  if(COOK.i >= COOK.steps.length){ speak('Bon appétit ! Ta version healthy est prête.'); return; }
+  const [t, p, tm] = COOK.steps[COOK.i];
+  speak(`Étape ${COOK.i + 1}. ${t}. ${p}${minutesOf(tm) ? `. Dis « minuteur » pour lancer ${tm}.` : ''}`);
+}
+function voiceHandle(raw){
+  const t = low(raw).trim(); VOICE.last = t;
+  voiceBubble(raw, true);
+  if(/suivan|apres|ensuite|continue|next|d'accord|ok\b/.test(t)) cookMove(1);
+  else if(/precedent|retour|avant|recule/.test(t)) cookMove(-1);
+  else if(/repet|encore|redis|quoi\b/.test(t)) readStep();
+  else if(/minut|chrono|timer|compte a rebours/.test(t)){
+    const s = COOK.steps[COOK.i], m = s && minutesOf(s[2]);
+    if(m){ if(!COOK.timers[COOK.i]) cookTimer(COOK.i, m); speak(`C'est parti pour ${s[2]}. Je te préviens quand c'est prêt.`); }
+    else speak('Pas de minuteur pour cette étape.');
+  }
+  else if(/ingredient|il faut quoi|liste/.test(t)) speak('Il te faut : ' + COOK.ing.map(([, n, q]) => `${q} de ${n}`).join(', ') + '.');
+  else if(/stop|arrete|termine|ferme|quitte|silence/.test(t)){ voiceOff(); speak('D\'accord, j\'arrête de t\'écouter.'); }
+  else speak('Je n\'ai pas compris. Dis suivant, précédent, répète, minuteur ou ingrédients.');
+}
+function voiceOn(){
+  VOICE.on = true; $('#cookMic').classList.add('on');
+  if(!SR){
+    toast('🔊 Lecture à voix haute activée (commande vocale indisponible sur ce navigateur)');
+    voiceBubble('Lecture à voix haute activée'); readStep(); return;
+  }
+  try{
+    const rec = VOICE.rec = new SR();
+    rec.lang = 'fr-FR'; rec.continuous = true; rec.interimResults = false;
+    rec.onresult = e => { const r = e.results[e.results.length - 1]; if(r && r.isFinal) voiceHandle(r[0].transcript); };
+    rec.onerror = e => { if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){ toast('🎙️ Autorise le micro pour piloter la recette à la voix'); voiceOff(); } };
+    rec.onend = () => { if(VOICE.on && VOICE.rec === rec) setTimeout(() => { try{ rec.start(); }catch(_){} }, 250); };
+    rec.start();
+  }catch(_){ toast('Micro indisponible'); }
+  voiceBubble('Je t\'écoute : « suivant », « répète », « minuteur »…');
+  speak('Je t\'écoute. Dis suivant, précédent, répète, minuteur ou ingrédients.');
+  setTimeout(() => { if(VOICE.on) readStep(); }, 3600);
+}
+function voiceOff(){
+  VOICE.on = false;
+  const rec = VOICE.rec; VOICE.rec = null;
+  try{ rec && rec.stop(); }catch(_){}
+  const b = $('#cookMic'); if(b) b.classList.remove('on');
+  voiceBubble('');
+}
+function voiceToggle(){ VOICE.on ? (voiceOff(), speechSynthesis && speechSynthesis.cancel()) : voiceOn(); }
+
+/* ---------- Coach IA ---------- */
+const COACH = { msgs:[], busy:false };
+const COACH_SUGG = ['J\'ai 20 min et du poulet', 'Il me faut 30 g de protéines', 'Un dessert léger', 'Combien il me reste ?', 'Une idée végétarienne pour ce soir'];
+function coachOpen(){
+  if(!COACH.msgs.length){
+    const t = targets(), d = dayTotals(isoDay()), name = ACCT.session && ACCT.session.user.name ? ' ' + ACCT.session.user.name.split(' ')[0] : '';
+    COACH.msgs.push({ me:false, html:`Salut${esc(name)} 👋 Je suis ton coach HealthyRemake.<br>Aujourd'hui il te reste <b>${fmtNum(Math.max(0, t.kcal - d.kcal))} kcal</b> et <b>${Math.max(0, Math.round(t.p - d.p))} g de protéines</b>. Dis-moi ton temps dispo, ce qu'il y a dans ton frigo ou ce dont tu as envie !` });
+  }
+  renderCoach(); openScreen('s-coach');
+  setTimeout(() => { const i = $('#coachInput'); if(i && matchMedia('(hover:hover)').matches) i.focus(); }, 400);
+}
+function renderCoach(){
+  const box = $('#coachMsgs');
+  box.innerHTML = COACH.msgs.map(m => `<div class="cm ${m.me ? 'me' : ''}">${m.me ? '' : '<span class="cm-av">🤖</span>'}<div class="cm-b">${m.html}</div></div>`).join('')
+    + (COACH.busy ? '<div class="cm"><span class="cm-av">🤖</span><div class="cm-b typing"><i></i><i></i><i></i></div></div>' : '');
+  $('#coachSugg').innerHTML = COACH_SUGG.map(s => `<button class="chip" data-action="coachSay" data-q="${esc(s)}">${esc(s)}</button>`).join('');
+  $('#coachMicBtn').hidden = !SR;
+  const s = $('#s-coach'); requestAnimationFrame(() => s.scrollTo({ top:s.scrollHeight, behavior:'smooth' }));
+}
+function coachSay(q){
+  q = String(q || '').trim(); if(!q || COACH.busy) return;
+  COACH.msgs.push({ me:true, html:esc(q) }); COACH.busy = true; renderCoach();
+  setTimeout(() => { COACH.busy = false; COACH.msgs.push({ me:false, html:coachReply(q) }); renderCoach(); buzz(8); }, 700 + Math.random() * 600);
+}
+function coachCard(k, l){
+  const d = DISHES[k], r = d.levels[l];
+  return `<button class="cm-card" data-action="openRecipe" data-dish="${esc(k)}" data-level="${l}"><span>${d.emoji}</span><div><b>${esc(r.name)}</b><small>🔥 ${r.kcal} kcal · 💪 ${r.p} g · ⏱ ${esc(r.time)}</small></div><em>›</em></button>`;
+}
+function coachReply(q){
+  const t = low(q), tg = targets(), day = dayTotals(isoDay());
+  const remK = Math.round(tg.kcal - day.kcal), remP = Math.round(tg.p - day.p);
+  if(/^(salut|bonjour|hello|coucou|yo|hey)\b/.test(t)) return 'Salut ! 😊 Dis-moi par exemple « j\'ai 15 minutes et des œufs » ou « je veux un truc riche en protéines ».';
+  if(/merci/.test(t)) return 'Avec plaisir ! Bon appétit 🥗';
+  if(/(reste|combien|bilan|ou j'en suis|objectif)/.test(t) && !/(recette|idee|propose|manger|cuisiner)/.test(t)){
+    const pct = Math.round(day.kcal / tg.kcal * 100);
+    return `Aujourd'hui tu es à <b>${fmtNum(day.kcal)} kcal</b> sur ${fmtNum(tg.kcal)} (${pct} %) et <b>${Math.round(day.p)} g</b> de protéines sur ${tg.p} g.<br>${remK > 150 ? `Il te reste <b>${fmtNum(remK)} kcal</b>${remP > 5 ? ` et <b>${remP} g de protéines</b> à caser` : ''}. Tu veux une idée de repas qui rentre pile dedans ?` : 'Tu as quasiment atteint ton objectif, bravo ! 🎯 Si tu as faim, pars sur quelque chose de léger.'}`;
+  }
+  // Critères
+  const tm = t.match(/(\d+)\s*(?:min|minutes|mn)\b/), pm = t.match(/(\d+)\s*g(?:rammes)?\s*(?:de\s*)?prot/) || t.match(/prot\w*\D{0,12}(\d+)\s*g/);
+  const km = t.match(/(\d{3,4})\s*(?:kcal|calories|cal)\b/);
+  let maxT = tm ? +tm[1] : /(rapide|vite|presse|pas le temps|express)/.test(t) ? 20 : 0;
+  let minP = pm ? +pm[1] : 0, maxK = km ? +km[1] : 0;
+  const sweet = /(sucre|dessert|gourmand|gouter|chocolat|petit[- ]dej|brunch|matin)/.test(t);
+  const dessertOnly = /dessert/.test(t);
+  const light = /(leger|light|seche|maigrir|perdre|mincir|regime|pas trop calori)/.test(t);
+  const muscle = /(muscle|masse|proteine|proteines|prot\b|sport|seance)/.test(t) || minP > 0;
+  const vege = /(vege|vegetarien|sans viande|veggie)/.test(t);
+  const ings = FRIDGE_FLAT.filter(([id, , re]) => re.test(t) || t.includes(low(id)));
+  if(light && !maxK) maxK = 450;
+  const lvl = PREFS.level;
+  let pool = [...LIB_ORDER.map(k => [k, lvl]), ...PLUS.mine.map(m => ['my_' + m.id, 0]).filter(([k]) => DISHES[k])].filter(([k, l]) => {
+    const d = DISHES[k], r = d.levels[l], m = minutesOf(r.time);
+    if(sweet !== SWEET.includes(d.cat) && (sweet || ['desserts', 'boissons'].includes(d.cat))) return false;
+    if(dessertOnly && d.cat !== 'desserts') return false;
+    if(maxT && (!m || m > maxT)) return false;
+    if(maxK && r.kcal > maxK) return false;
+    if(minP && r.p < minP) return false;
+    const tags = tagsOf(k, l);
+    if(vege && (tags.meat || tags.fish)) return false;
+    return !myAvoid().some(a => tags[a]);
+  }).map(([k, l]) => {
+    const r = DISHES[k].levels[l], need = needsOf(k, l);
+    const hit = ings.filter(([id]) => need.has(id)).length;
+    let score = hit * 100 + Math.random() * 8;
+    if(muscle) score += r.p * 1.5;
+    if(light) score += (600 - r.kcal) / 10;
+    if(!muscle && !light && remK > 0) score -= Math.abs(r.kcal - Math.min(remK, 700)) / 25;
+    return { k, l, hit, score };
+  });
+  if(ings.length) pool = pool.filter(x => x.hit > 0);
+  pool.sort((a, b) => b.score - a.score);
+  const top = pool.slice(0, 3);
+  if(!top.length) return `Je n'ai rien trouvé avec tous ces critères 🤔 Essaie d'en enlever un, par exemple ${maxT ? 'un peu plus de temps' : ings.length ? 'moins d\'ingrédients imposés' : 'moins de contraintes'}.`;
+  const bits = [];
+  if(ings.length) bits.push('avec ' + ings.slice(0, 3).map(([id]) => id).join(', '));
+  if(maxT) bits.push(`en moins de ${maxT} min`);
+  if(minP) bits.push(`avec au moins ${minP} g de protéines`);
+  else if(muscle) bits.push('riche en protéines');
+  if(light) bits.push('légère');
+  if(vege) bits.push('végétarienne');
+  if(sweet) bits.push('côté sucré');
+  const intro = bits.length ? `Voilà ce que je te propose ${bits.join(', ')} :` : ['Bonne idée ! Voilà mes suggestions :', 'J\'ai ce qu\'il te faut 👇', 'Regarde ces recettes :'][Math.floor(Math.random() * 3)];
+  const best = DISHES[top[0].k].levels[top[0].l];
+  const after = remK - best.kcal, afterP = remP - best.p;
+  return `${intro}${top.map(x => coachCard(x.k, x.l)).join('')}<span class="cm-note">Avec la première, il te restera <b>${fmtNum(Math.max(0, after))} kcal</b>${afterP > 0 ? ` et <b>${Math.round(afterP)} g</b> de protéines` : ' et ton objectif protéines est atteint 💪'} pour aujourd'hui.</span>`;
+}
+document.addEventListener('submit', e => {
+  if(e.target.id !== 'coachForm') return;
+  e.preventDefault();
+  const i = $('#coachInput'); coachSay(i.value); i.value = '';
+});
+function coachMic(){
+  if(!SR) return;
+  try{
+    const rec = new SR(); rec.lang = 'fr-FR'; rec.interimResults = false;
+    const b = $('#coachMicBtn'); b.classList.add('on');
+    rec.onresult = e => { const txt = e.results[0][0].transcript; coachSay(txt); };
+    rec.onend = () => b.classList.remove('on');
+    rec.onerror = () => { b.classList.remove('on'); toast('🎙️ Autorise le micro pour parler au coach'); };
+    rec.start();
+  }catch(_){}
+}
+
+/* =====================================================================
+   Mon bilan (story animée), widget + notification, code-barres
+   ===================================================================== */
+const WR = { i:0, slides:[], timer:0, t0:0, paused:false, dur:5200 };
+function wrappedData(){
+  const from = dayFrom(isoDay(), -29), entries = Object.entries(PLUS.journal).filter(([d]) => d >= from).flatMap(([, l]) => l);
+  const saved = entries.reduce((a, x) => a + (x.saved || 0), 0), prot = entries.reduce((a, x) => a + (x.p || 0), 0);
+  const count = {}; entries.forEach(x => { count[x.k] = (count[x.k] || 0) + 1; });
+  const favK = Object.keys(count).sort((a, b) => count[b] - count[a])[0];
+  const days = new Set(Object.keys(PLUS.journal).filter(d => d >= from && PLUS.journal[d].length)).size;
+  const big = DISHES.bigmac ? DISHES.bigmac.original.kcal : 550;
+  return { meals:entries.length, saved, prot, favK, favN:favK ? count[favK] : 0, days, best:bestStreak(), badges:BADGES.filter(b => PLUS.badges[b[0]]), big };
+}
+function wrappedOpen(){
+  const w = wrappedData();
+  if(!w.meals){ toast('Note quelques repas dans ton journal pour débloquer ton bilan'); return; }
+  const name = ACCT.session && ACCT.session.user.name ? ACCT.session.user.name.split(' ')[0] : '';
+  const fav = w.favK && DISHES[w.favK];
+  WR.slides = [
+    { bg:'g1', html:`<div class="wr-e">🎬</div><small>Ton mois sur HealthyRemake</small><h2>${name ? esc(name) + ', ' : ''}voici ton bilan</h2><p>30 derniers jours · ${w.days} jours actifs</p>` },
+    { bg:'g2', html:`<small>Tu as noté</small><h2 class="wr-n" data-n="${w.meals}">0</h2><p>repas healthy</p><div class="wr-foot">soit ${(w.meals / Math.max(1, w.days)).toFixed(1).replace('.', ',')} par jour actif 🥗</div>` },
+    { bg:'g3', html:`<small>Calories économisées</small><h2 class="wr-n" data-n="${Math.round(w.saved)}" data-pre="−">0</h2><p>kcal par rapport aux originaux</p><div class="wr-eq"><span>🍔</span><b>= ${Math.max(1, Math.round(w.saved / w.big))} Big Mac évités</b></div><div class="wr-foot">ou ${Math.round(w.saved / 11 / 60)} h de course 🏃</div>` },
+    { bg:'g4', html:`<small>Protéines</small><h2 class="wr-n" data-n="${Math.round(w.prot)}" data-suf=" g">0</h2><p>de protéines au compteur</p><div class="wr-eq"><span>🥚</span><b>≈ ${Math.round(w.prot / 6.3)} œufs</b></div>` },
+    fav ? { bg:'g5', html:`<small>Ton plat préféré</small><div class="wr-e big">${fav.emoji}</div><h2 class="sm">${esc(fav.levels[PREFS.level].name)}</h2><p>noté ${w.favN} fois ce mois-ci ❤️</p>` } : null,
+    { bg:'g6', html:`<small>Ta régularité</small><div class="wr-e">🔥</div><h2 class="wr-n" data-n="${w.best}">0</h2><p>jours d'affilée, ton record</p><div class="wr-foot">${streak() >= w.best ? 'Et la série continue en ce moment !' : 'Prêt à le battre ?'}</div>` },
+    { bg:'g7', html:`<small>Tes badges</small><h2>${w.badges.length} / ${BADGES.length}</h2><div class="wr-badges">${w.badges.map(b => `<span>${b[1]}</span>`).join('')}</div><p>${w.badges.length >= 10 ? 'Collectionneur confirmé 🏅' : 'Encore quelques-uns à débloquer !'}</p>` },
+    { bg:'g8', html:`<small>En résumé</small><div class="wr-sum"><div><b>${w.meals}</b><span>repas</span></div><div><b>−${fmtNum(w.saved)}</b><span>kcal</span></div><div><b>${Math.round(w.prot)} g</b><span>protéines</span></div><div><b>🔥 ${w.best}</b><span>jours</span></div></div>
+      <button class="btn wr-share" data-action="wrShare">📤 Partager mon bilan</button><button class="wr-again" data-action="wrAgain">↺ Revoir</button>` }
+  ].filter(Boolean);
+  WR.i = 0;
+  const box = $('#wrapped');
+  box.innerHTML = `<div class="wr-bars">${WR.slides.map(() => '<i><span></span></i>').join('')}</div>
+    <button class="wr-x" data-action="wrClose" aria-label="Fermer">✕</button>
+    <div class="wr-slide" id="wrSlide"></div>
+    <button class="wr-tap l" data-action="wrPrev" aria-label="Précédent"></button><button class="wr-tap r" data-action="wrNext" aria-label="Suivant"></button>`;
+  box.hidden = false; box.classList.remove('out'); void box.offsetWidth; box.classList.add('in');
+  wrShow(0);
+}
+function wrShow(i){
+  WR.i = Math.max(0, Math.min(WR.slides.length - 1, i));
+  const s = WR.slides[WR.i], box = $('#wrapped');
+  box.className = 'wrapped in ' + s.bg;
+  const el = $('#wrSlide'); el.innerHTML = s.html; el.classList.remove('anim'); void el.offsetWidth; el.classList.add('anim');
+  el.querySelectorAll('.wr-n').forEach(n => {
+    const to = +n.dataset.n, pre = n.dataset.pre || '', suf = n.dataset.suf || '', t0 = performance.now();
+    (function step(now){ const p = Math.min(1, (now - t0) / 1300); n.textContent = pre + fmtNum(to * (1 - Math.pow(1 - p, 3))) + suf; if(p < 1) requestAnimationFrame(step); })(t0);
+  });
+  $$('#wrapped .wr-bars i').forEach((b, j) => { b.className = j < WR.i ? 'done' : j === WR.i ? 'run' : ''; });
+  const run = $('#wrapped .wr-bars i.run span'); if(run){ run.style.animationDuration = WR.dur + 'ms'; }
+  clearTimeout(WR.timer);
+  if(WR.i < WR.slides.length - 1) WR.timer = setTimeout(() => wrShow(WR.i + 1), WR.dur);
+  else confetti(90);
+  buzz(6);
+}
+function wrClose(){ clearTimeout(WR.timer); const b = $('#wrapped'); b.classList.add('out'); setTimeout(() => { b.hidden = true; b.classList.remove('out'); }, 300); }
+async function wrShare(){
+  const w = wrappedData(), cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1920;
+  try{ await document.fonts.load('700 60px Rubik'); }catch(_){}
+  const x = cv.getContext('2d'), F = (wt, s) => `${wt} ${s}px Rubik, system-ui, sans-serif`;
+  const g = x.createLinearGradient(0, 0, 1080, 1920); g.addColorStop(0, '#2BC48F'); g.addColorStop(.5, '#0E9F6E'); g.addColorStop(1, '#053F2C');
+  x.fillStyle = g; x.fillRect(0, 0, 1080, 1920);
+  x.fillStyle = 'rgba(255,255,255,.08)'; x.beginPath(); x.arc(900, 260, 380, 0, 7); x.fill(); x.beginPath(); x.arc(120, 1700, 320, 0, 7); x.fill();
+  x.textAlign = 'center'; x.fillStyle = '#fff';
+  x.font = F(500, 44); x.fillText('Mon mois sur HealthyRemake AI', 540, 230);
+  x.font = '160px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.fillText('🥗', 540, 460);
+  const rows = [[`${w.meals}`, 'repas healthy notés'], [`−${fmtNum(w.saved)}`, 'kcal économisées'], [`${Math.round(w.prot)} g`, 'de protéines'], [`${w.best} jours`, 'de série record']];
+  rows.forEach(([v, l], i) => {
+    const y = 640 + i * 270;
+    x.fillStyle = 'rgba(255,255,255,.14)'; roundRect(x, 120, y, 840, 220, 44); x.fill();
+    x.fillStyle = '#fff'; x.font = F(700, 96); x.fillText(v, 540, y + 120); x.font = F(500, 40); x.fillStyle = 'rgba(255,255,255,.85)'; x.fillText(l, 540, y + 180);
+  });
+  x.font = F(700, 46); x.fillStyle = '#fff'; x.fillText(`= ${Math.max(1, Math.round(w.saved / w.big))} Big Mac évités 🍔`, 540, 1780);
+  x.font = F(500, 34); x.fillStyle = 'rgba(255,255,255,.8)'; x.fillText('HealthyRemake AI · le fast-food, version healthy', 540, 1860);
+  const blob = await new Promise(ok => cv.toBlob(ok, 'image/png'));
+  const file = new File([blob], 'mon-bilan-healthyremake.png', { type:'image/png' });
+  PLUS.stats.shares++; savePlus();
+  try{ if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:'Mon bilan HealthyRemake' }); return; } }catch(e){ if(e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  toast('🖼️ Bilan enregistré');
+}
+
+/* ---------- Widget écran verrouillé + notification du midi ---------- */
+function nextMeal(){
+  const today = isoDay(), p = PLUS.plan[today] || {}, h = new Date().getHours();
+  return (h < 14 ? (p.midi || p.soir) : p.soir) || (PLUS.plan[dayFrom(today, 1)] || {}).midi || null;
+}
+function widgetSheet(){
+  const t = targets(), d = dayTotals(isoDay()), nm = nextMeal(), now = new Date();
+  openPlus(`<h4>Widget & notifications</h4><p>Ce que tu vois sur ton écran verrouillé avec HealthyRemake.</p>
+    <div class="lock">
+      <div class="lock-date">${cap(now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' }))}</div>
+      <div class="lock-time">${pad2(now.getHours())}:${pad2(now.getMinutes())}</div>
+      <div class="lock-widgets">
+        <div class="lw ring">${ringsSVG([d.kcal / t.kcal, d.p / t.p, Math.min(3, (PLUS.journal[isoDay()] || []).length) / 3], 64)}<div><b>${fmtNum(Math.max(0, t.kcal - d.kcal))}</b><small>kcal restantes</small></div></div>
+        <div class="lw meal"><small>🍽️ ${nm ? 'Au menu' : 'Aujourd\'hui'}</small><b>${nm ? esc(nm.name) : 'Planifie ton prochain repas'}</b>${nm ? `<em>${nm.kcal} kcal · ${nm.p} g prot.</em>` : ''}</div>
+      </div>
+      <div class="lock-notif" id="lockNotif" hidden></div>
+    </div>
+    <button class="btn btn-primary" data-action="notifDemo">🔔 Recevoir la notification du midi (dans 5 s)</button>
+    <p class="fx-note" style="margin-top:10px">Astuce présentation : touche le bouton, ferme cette fenêtre, la notification arrive toute seule.</p>`);
+  animateRings($('#plusSheetBody'));
+}
+function notifDemo(){
+  const nm = nextMeal();
+  const title = 'HealthyRemake AI', body = nm ? `C'est l'heure de manger ! Au menu : ${nm.name.split(',')[0]} ${nm.emoji} · ${nm.kcal} kcal` : 'C\'est l\'heure de manger healthy 🥗 Une idée ? Ouvre le coach !';
+  toast('🔔 Notification programmée dans 5 secondes');
+  setTimeout(() => {
+    fakeNotif(title, body, nm);
+    if(document.hidden) notify(title, body, './');
+  }, 5000);
+}
+function fakeNotif(title, body, nm){
+  const n = $('#fakeNotif');
+  n.innerHTML = `<img src="icon-192.png" alt=""><div><b>${esc(title)}</b><span>${esc(body)}</span></div><small>maintenant</small>`;
+  n.dataset.dish = nm ? nm.k : ''; n.dataset.level = nm ? nm.l : '';
+  n.hidden = false; n.classList.remove('out'); void n.offsetWidth; n.classList.add('in');
+  buzz([40, 60, 40]); try{ beep(); }catch(_){}
+  clearTimeout(n._t); n._t = setTimeout(() => { n.classList.add('out'); setTimeout(() => { n.hidden = true; }, 350); }, 6000);
+}
+
+/* ---------- Scan de code-barres (Open Food Facts) ---------- */
+const BC = { stream:null, loop:0, zx:null, busy:false, last:'' };
+// Produits d'exemple, utilisables sans réseau (valeurs moyennes pour 100 g / 100 ml)
+const BC_CATALOG = {
+  '5449000000996': { name:'Coca-Cola', brand:'Coca-Cola', qty:'33 cl', kcal:42, sugar:10.6, fat:0, prot:0, emoji:'🥤', kind:'soda', portion:330 },
+  '3017620422003': { name:'Nutella', brand:'Ferrero', qty:'400 g', kcal:539, sugar:56.3, fat:30.9, prot:6.3, emoji:'🍫', kind:'pate', portion:15 },
+  '7622210449283': { name:'Prince goût chocolat', brand:'LU', qty:'300 g', kcal:469, sugar:32, fat:17, prot:6.4, emoji:'🍪', kind:'biscuit', portion:30 },
+  '8000500037560': { name:'Kinder Bueno', brand:'Ferrero', qty:'43 g', kcal:572, sugar:41, fat:37, prot:8.6, emoji:'🍫', kind:'barre', portion:43 }
+};
+const BC_ALT = { soda:['boissons'], pate:['petitdej', 'desserts'], biscuit:['desserts', 'petitdej'], barre:['desserts', 'snacks'], chips:['snacks'], cereales:['petitdej'], pizza:['pizzas'], burger:['burgers'], plat:['bowls', 'pates'], glace:['desserts'] };
+function bcKind(p){
+  const t = low(`${p.name} ${p.cats || ''}`);
+  return /soda|cola|boisson|drink|limonade|jus/.test(t) ? 'soda' : /pate a tartiner|spread|nutella/.test(t) ? 'pate' : /biscuit|cookie|gateau|brownie|madeleine/.test(t) ? 'biscuit'
+    : /chips|crisps|apero|crackers/.test(t) ? 'chips' : /cereal|muesli|granola/.test(t) ? 'cereales' : /pizza/.test(t) ? 'pizza' : /burger|sandwich/.test(t) ? 'burger'
+    : /glace|ice cream/.test(t) ? 'glace' : /chocolat|barre|bonbon|confiserie|candy/.test(t) ? 'barre' : 'plat';
+}
+function bcOpen(){
+  $('#bcResult').innerHTML = ''; $('#bcCode').value = '';
+  $('#bcExamples').innerHTML = Object.entries(BC_CATALOG).map(([c, p]) => `<button class="chip" data-action="bcExample" data-code="${c}">${p.emoji} ${esc(p.name)}</button>`).join('');
+  openScreen('s-barcode');
+  bcStart();
+}
+async function bcStart(){
+  const st = $('#bcStatus'), v = $('#bcVideo');
+  st.textContent = 'Ouverture de la caméra…';
+  try{
+    BC.stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, width:{ ideal:1280 } }, audio:false });
+    v.srcObject = BC.stream; await v.play();
+    $('#bcCam').classList.add('live');
+    if('BarcodeDetector' in window){
+      const det = new BarcodeDetector({ formats:['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+      st.textContent = 'Vise le code-barres d\'un produit';
+      const tick = async () => { if(!BC.stream) return; try{ const r = await det.detect(v); if(r[0]) bcFound(r[0].rawValue); }catch(_){} BC.loop = setTimeout(tick, 250); };
+      tick();
+    } else {
+      st.textContent = 'Chargement du lecteur…';
+      await new Promise((ok, ko) => { if(window.ZXing) return ok(); const s = document.createElement('script'); s.src = 'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js'; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+      BC.zx = new ZXing.BrowserMultiFormatReader();
+      st.textContent = 'Vise le code-barres d\'un produit';
+      BC.zx.decodeFromStream(BC.stream, v, res => { if(res) bcFound(res.getText()); });
+    }
+  }catch(e){
+    $('#bcCam').classList.remove('live');
+    st.textContent = 'Caméra indisponible : saisis le code ou choisis un produit d\'exemple ci-dessous.';
+  }
+}
+function bcStop(){
+  clearTimeout(BC.loop);
+  try{ BC.zx && BC.zx.reset(); }catch(_){} BC.zx = null;
+  if(BC.stream){ BC.stream.getTracks().forEach(t => t.stop()); BC.stream = null; }
+  const c = $('#bcCam'); if(c) c.classList.remove('live');
+}
+async function bcFound(code){
+  code = String(code || '').replace(/\D/g, '');
+  if(!code || BC.busy || code === BC.last) return;
+  BC.busy = true; BC.last = code; buzz(30); try{ beep(); }catch(_){}
+  $('#bcStatus').textContent = `Code ${code} détecté · recherche du produit…`;
+  $('#bcResult').innerHTML = '<div class="bc-load"><span class="spin"></span> Recherche dans Open Food Facts…</div>';
+  let p = BC_CATALOG[code] ? { ...BC_CATALOG[code], code, offline:true } : null;
+  if(!p){
+    try{
+      const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 7000);
+      const j = await (await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_fr,brands,quantity,nutriments,nutriscore_grade,image_front_small_url,categories`, { signal:ctrl.signal })).json();
+      clearTimeout(t);
+      if(j && j.status === 1 && j.product){
+        const pr = j.product, n = pr.nutriments || {};
+        p = { code, name:pr.product_name_fr || pr.product_name || 'Produit', brand:(pr.brands || '').split(',')[0], qty:pr.quantity || '', kcal:Math.round(n['energy-kcal_100g'] || 0), sugar:n.sugars_100g, fat:n.fat_100g, prot:n.proteins_100g,
+          ns:(pr.nutriscore_grade || '').toUpperCase(), img:pr.image_front_small_url, cats:pr.categories, emoji:'🛒', portion:100 };
+      }
+    }catch(_){}
+  }
+  BC.busy = false;
+  if(!p){ $('#bcResult').innerHTML = `<div class="empty"><span class="e">🔎</span><b>Produit introuvable</b>Le code ${code} n'est pas dans Open Food Facts${navigator.onLine ? '' : ' (pas de connexion)'}. Essaie un produit d'exemple.</div>`; $('#bcStatus').textContent = 'Vise un autre code-barres'; setTimeout(() => { BC.last = ''; }, 2500); return; }
+  p.kind = p.kind || bcKind(p);
+  bcRender(p);
+  $('#bcStatus').textContent = 'Vise un autre code-barres';
+  setTimeout(() => { BC.last = ''; }, 4000);
+}
+function bcRender(p){
+  const grade = /^[A-E]$/.test(p.ns || '') ? p.ns : null;
+  // Note maison pour 100 g : calories, lipides, protéines et sucres
+  const own = (() => { const k = p.kcal || 0; if(!k) return 'C';
+    const s = Math.min(6, Math.max(0, (k - 350) / 110)) + Math.min(5, Math.max(0, ((p.fat || 0) * 9 / k - .28) * 22)) - Math.min(6, (p.prot || 0) * 4 / k * 22) + (p.sugar || 0) * .4;
+    return s <= -2.5 ? 'A' : s <= 0 ? 'B' : s <= 2 ? 'C' : s <= 4 ? 'D' : 'E'; })();
+  const cats = BC_ALT[p.kind] || ['bowls'];
+  const alts = LIB_ORDER.filter(k => cats.includes(DISHES[k].cat)).map(k => [k, PREFS.level]).sort((a, b) => levelOf(...a).kcal - levelOf(...b).kcal).slice(0, 3);
+  $('#bcResult').innerHTML = `<div class="card bc-card">
+      <div class="bc-top">${p.img ? `<img src="${esc(p.img)}" alt="">` : `<span class="bc-e">${p.emoji || '🛒'}</span>`}
+        <div><b>${esc(p.name)}</b><small>${esc([p.brand, p.qty].filter(Boolean).join(' · '))}</small>
+        <div class="bc-ns">${grade ? `Nutri-Score ${gradeBadge(grade, true)}` : `Note ${gradeBadge(own, true)}`}</div></div></div>
+      <div class="bc-nut"><div><b>${p.kcal}</b><span>kcal / 100 ${p.kind === 'soda' ? 'ml' : 'g'}</span></div><div><b>${p.sugar != null ? Math.round(p.sugar * 10) / 10 + ' g' : '—'}</b><span>sucres</span></div><div><b>${p.fat != null ? Math.round(p.fat * 10) / 10 + ' g' : '—'}</b><span>lipides</span></div><div><b>${p.prot != null ? Math.round(p.prot * 10) / 10 + ' g' : '—'}</b><span>protéines</span></div></div>
+      ${p.offline ? '<p class="fx-note">Produit d\'exemple : valeurs moyennes indicatives.</p>' : '<p class="fx-note">Données : Open Food Facts.</p>'}
+    </div>
+    <div class="section-title" style="margin-top:18px">💚 L'alternative healthy maison</div>
+    ${alts.map(([k, l]) => coachCard(k, l)).join('')}`;
+  $('#bcResult').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+document.addEventListener('submit', e => { if(e.target.id === 'bcForm'){ e.preventDefault(); BC.last = ''; bcFound($('#bcCode').value); } });
 /* /PLUS:JS */
 
 document.addEventListener('click', e => {
