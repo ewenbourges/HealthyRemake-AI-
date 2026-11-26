@@ -7109,7 +7109,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-10';
+const APP_VERSION = '2026.11.26-11';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -9723,13 +9723,20 @@ async function listenOnce(onState){
     if(REC.stream){ REC.stream.getTracks().forEach(t => t.stop()); REC.stream = null; }
   }
 }
-// Copier le nouveau code du serveur (pour la mise à jour en 1 minute)
-async function copyWorkerCode(){
+// Copier le nouveau code du serveur (pour la mise à jour en 1 minute).
+// Safari n'accepte de copier que pendant le toucher : on lui donne une « promesse » de texte.
+const WORKER_RAW = 'https://raw.githubusercontent.com/ewenbourges/HealthyRemake-AI-/main/serveur-ia/worker.js';
+function copyWorkerCode(){
+  const get = () => fetch('serveur-ia/worker.js', { cache:'no-store' }).then(r => { if(!r.ok) throw new Error('http'); return r.text(); });
+  const fallback = () => { toast('📄 Ouverture du code : sélectionne tout puis copie'); setTimeout(() => { location.href = WORKER_RAW; }, 900); };
   try{
-    const code = await (await fetch('serveur-ia/worker.js', { cache:'no-store' })).text();
-    await navigator.clipboard.writeText(code);
-    toast('📋 Code du serveur copié');
-  }catch(_){ window.open('https://github.com/ewenbourges/HealthyRemake-AI-/blob/main/serveur-ia/worker.js', '_blank', 'noopener'); }
+    if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+      const item = new ClipboardItem({ 'text/plain': get().then(t => new Blob([t], { type:'text/plain' })) });
+      navigator.clipboard.write([item]).then(() => toast('📋 Code du serveur copié'), fallback);
+      return;
+    }
+  }catch(_){}
+  get().then(t => navigator.clipboard.writeText(t)).then(() => toast('📋 Code du serveur copié'), fallback);
 }
 /* /PLUS:JS */
 
