@@ -1683,6 +1683,14 @@ a.btn{text-decoration:none;display:flex}
 .diag.bad{background:rgba(240,138,108,.12);color:#C2410C;border-color:rgba(240,138,108,.35)}
 html[data-theme="dark"] .diag.bad{color:#FDBA9F}
 .diag small{display:block;font-weight:500;opacity:.75;margin-top:4px;word-break:break-all}
+
+/* Coach IA complet */
+.cm-new{margin-top:10px;border:1.5px solid var(--mint);border-radius:16px;padding:8px;background:linear-gradient(160deg,var(--pastel-2),var(--card))}
+.cm-new .cm-card{margin-top:6px;background:var(--card)}
+.cm-new-tag{display:inline-block;font-size:11.5px;font-weight:700;color:var(--emerald-dd);background:var(--pastel);padding:3px 9px;border-radius:99px}
+.cm-keep{display:block;width:100%;margin-top:8px;padding:9px;border-radius:12px;background:var(--emerald);color:#fff;font-weight:600;font-size:13px}
+.cm-keep[disabled]{background:var(--pastel);color:var(--emerald-dd)}
+.cm-upgrade{display:block;width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1.5px dashed var(--mint);background:var(--pastel-2);color:var(--emerald-dd);font-weight:600;font-size:13px;text-align:center}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -7115,7 +7123,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-12';
+const APP_VERSION = '2026.11.26-13';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -8255,7 +8263,7 @@ function registerMine(){
   PLUS.mine.forEach(m => {
     const p = Math.round(m.p), c = Math.round(m.c), f = Math.round(m.f), kcal = kc(p, c, f) || Math.round(m.kcal);
     const lvl = { name:m.name, img:'data:,', desc:m.desc || 'Ma recette healthy maison.', kcal, p, c, f, time:m.time || '20 min', diff:'Facile', serv:m.serv || '1 portion',
-      ing:m.ings.map(x => [x.emoji || '🥄', x.name, x.g ? `${x.g} g` : 'selon goût']), steps:m.steps.length ? m.steps.map((s, i) => [s.t || `Étape ${i + 1}`, s.p, s.tm || '5 min']) : [['Préparation', 'Assemble tous les ingrédients.', '5 min']],
+      ing:m.ings.map(x => [x.emoji || '🥄', x.name, x.qty || (x.g ? `${x.g} g` : 'selon goût')]), steps:m.steps.length ? m.steps.map((s, i) => [s.t || `Étape ${i + 1}`, s.p, s.tm || '5 min']) : [['Préparation', 'Assemble tous les ingrédients.', '5 min']],
       swaps:[[m.origName || 'Recette classique', 'Ma version healthy']], tip:m.tip || '' };
     const ok = m.origKcal > kcal;
     DISHES['my_' + m.id] = { name:m.name, emoji:m.emoji || '🍽️', cat:m.cat || 'bowls', keywords:[], origImg:'data:,', custom:true, aiOnly:true, noCompare:!ok,
@@ -8600,6 +8608,8 @@ const PLUS_ACTIONS = {
   coachConvo: () => CV.convo ? stopConvo() : startConvo(),
   micRetry: () => { REC.ready = null; closeSheet(); setTimeout(() => state.screen === 's-coach' ? coachMic() : null, 300); },
   copyWorker: () => copyWorkerCode(),
+  coachKeep: el => coachKeep(el.dataset.dish, el),
+  coachUpgrade: () => serverVoiceHelp('coach'),
   micKeyboard: () => { closeSheet(); if(state.screen !== 's-coach') coachOpen(); setTimeout(() => $('#coachInput').focus(), 400); },
   openWrapped: () => wrappedOpen(), wrClose: () => wrClose(), wrNext: () => WR.i < WR.slides.length - 1 ? wrShow(WR.i + 1) : wrClose(), wrPrev: () => wrShow(WR.i - 1),
   wrShare: () => wrShare(), wrAgain: () => wrShow(0),
@@ -9158,7 +9168,10 @@ function coachSay(q){
   COACH.msgs.push({ me:true, html:esc(q) });
   if(coachVoiceCommand(q)){ renderCoach(); return; }
   COACH.busy = true; renderCoach();
-  setTimeout(() => { COACH.busy = false; const html = coachReply(q); COACH.msgs.push({ me:false, html }); renderCoach(); buzz(8); coachAfterReply(html); }, 600 + Math.random() * 500);
+  const t0 = Date.now();
+  coachAnswer(q).then(html => {
+    setTimeout(() => { COACH.busy = false; COACH.msgs.push({ me:false, html }); renderCoach(); buzz(8); coachAfterReply(html); }, Math.max(0, 500 - (Date.now() - t0)));
+  });
 }
 function coachCard(k, l){
   const d = DISHES[k], r = d.levels[l];
@@ -9603,10 +9616,11 @@ async function coachListenServer(){
   }
   CV.misses = 0; CV.voice = true; coachSay(text);
 }
-function serverVoiceHelp(){
-  openPlus(`<h4>🎙️ Activer la voix dans l'app</h4>
+function serverVoiceHelp(feature = 'voice'){
+  REC.helpFor = feature;
+  openPlus(`<h4>${feature === 'coach' ? '✨ Débloquer le coach IA complet' : '🎙️ Activer la voix dans l\'app'}</h4>
     <div class="diag" id="voiceDiag"><span class="spin"></span> Vérification de ton serveur…</div>
-    <p>Dans l'app installée, c'est ton serveur Cloudflare qui comprend ce que tu dis (Whisper, gratuit). Il faut le mettre à jour <b>une seule fois</b>, en 1 minute :</p>
+    <p>${feature === 'coach' ? 'Le coach complet utilise un vrai modèle d\'IA sur ton serveur Cloudflare (gratuit) : il répond à toutes tes questions et invente des recettes sur mesure.' : 'Dans l\'app installée, c\'est ton serveur Cloudflare qui comprend ce que tu dis (Whisper, gratuit).'} Il faut le mettre à jour <b>une seule fois</b>, en 1 minute :</p>
     <div class="steps-ins">
       <p><b>1.</b> Touche <b>Copier le code du serveur</b> ci-dessous.</p>
       <p><b>2.</b> Ouvre <b>dash.cloudflare.com</b> › <b>Workers & Pages</b> › <b>healthyremake-ai</b> › <b>Edit code</b>.</p>
@@ -9629,7 +9643,7 @@ async function voiceDiag(){
     const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 8000);
     const r = await fetch(url + '?t=' + Date.now(), { signal:ctrl.signal, cache:'no-store' }); clearTimeout(t);
     const j = await r.json().catch(() => null);
-    if(j && j.transcribe){ cls = 'ok'; html = '✓ Ton serveur est à jour ! Touche <b>Réessayer</b>.'; REC.ready = true; }
+    if(j && (REC.helpFor === 'coach' ? j.coach : j.transcribe)){ cls = 'ok'; html = REC.helpFor === 'coach' ? '✓ Ton serveur est à jour ! Ferme cette fenêtre et repose ta question au coach.' : '✓ Ton serveur est à jour ! Touche <b>Réessayer</b>.'; REC.ready = !!j.transcribe; COACH_AI.ready = !!j.coach; }
     else if(j && j.service){ html = '⚠️ Ton serveur répond, mais c\'est encore <b>l\'ancienne version</b>. Dans Cloudflare, après avoir collé le code, clique bien sur <b>Deploy</b> (pas seulement Enregistrer), puis attends le message de réussite.'; REC.ready = false; }
     else html = `⚠️ Ton serveur a répondu une erreur (code ${r.status}). Le code a peut-être été collé en partie : recolle-le en entier, puis <b>Deploy</b>.`;
   }catch(e){ html = '⚠️ Ton serveur ne répond pas. Vérifie ta connexion internet, ou que le code collé est complet, puis <b>Deploy</b>.'; }
@@ -9762,6 +9776,112 @@ function copyWorkerCode(){
     }
   }catch(_){}
   get().then(t => navigator.clipboard.writeText(t)).then(() => toast('📋 Code du serveur copié'), fallback);
+}
+
+/* =====================================================================
+   Coach IA branché sur un vrai modèle de langage (serveur /coach)
+   Contexte personnel + catalogue de recettes + historique de la conversation.
+   Sans serveur à jour (ou hors ligne) : le moteur local prend le relais.
+   ===================================================================== */
+const COACH_AI = { ready:null, hist:[], n:0, tipShown:false };
+async function coachServerReady(force){
+  if(!AI.url) return false;
+  if(COACH_AI.ready !== null && !force) return COACH_AI.ready;
+  try{
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 5000);
+    const j = await (await fetch(AI.url + '?t=' + Date.now(), { signal:ctrl.signal, cache:'no-store' })).json(); clearTimeout(t);
+    COACH_AI.ready = !!(j && j.coach);
+    if(j && j.transcribe) REC.ready = true;
+  }catch(_){ COACH_AI.ready = false; }
+  return COACH_AI.ready;
+}
+setTimeout(() => coachServerReady(), 3000);
+
+function coachCatalog(){
+  const lvl = PREFS.level;
+  const rows = LIB_ORDER.map(k => {
+    const d = DISHES[k], r = d.levels[lvl];
+    return `${k}:${r.name.replace(/,? version .*$/i, '').slice(0, 48)}${d.brand ? ' (façon ' + d.name + ')' : ''}|${r.kcal}kcal|${r.p}g prot|${minutesOf(r.time) || r.time}min|${catOf(d.cat).label}`;
+  });
+  PLUS.mine.forEach(m => rows.push(`my_${m.id}:${m.name.slice(0, 48)} (recette perso)|${Math.round(m.kcal)}kcal|${Math.round(m.p)}g prot|${minutesOf(m.time) || 20}min|Mes recettes`));
+  return rows;
+}
+function coachContext(){
+  const now = new Date(), today = isoDay(), t = targets(), d = dayTotals(today), pr = PLUS.profile;
+  const meals = (PLUS.journal[today] || []).map(x => `${x.name} (${x.kcal} kcal, ${x.p} g prot.)`);
+  const plan = PLUS.plan[today] || {};
+  const avoid = myAvoid().map(a => TAG_LABEL[a]);
+  return [
+    `Date : ${now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' })}, ${pad2(now.getHours())}h${pad2(now.getMinutes())}.`,
+    ACCT.session && ACCT.session.user.name ? `Prénom : ${ACCT.session.user.name}.` : '',
+    `Objectif : ${GOALS[PREFS.level].t} (recettes au niveau « ${LEVELS[PREFS.level].label} »).`,
+    `Besoins du jour : ${t.kcal} kcal, ${t.p} g protéines, ${t.c} g glucides, ${t.f} g lipides${t.set ? '' : ' (valeurs par défaut, profil non renseigné)'}.`,
+    pr ? `Profil : ${pr.sex === 'm' ? 'homme' : 'femme'}, ${pr.age} ans, ${pr.height} cm, ${pr.weight} kg, activité ${ACTIVITY.find(a => a[0] === pr.activity)?.[1] || 'moyenne'}.` : '',
+    `Déjà mangé aujourd'hui : ${Math.round(d.kcal)} kcal, ${Math.round(d.p)} g prot., ${Math.round(d.c)} g gluc., ${Math.round(d.f)} g lip.${meals.length ? ' Repas : ' + meals.join(' ; ') + '.' : ' Aucun repas noté.'}`,
+    `Reste pour aujourd'hui : ${Math.max(0, Math.round(t.kcal - d.kcal))} kcal et ${Math.max(0, Math.round(t.p - d.p))} g de protéines.`,
+    plan.midi || plan.soir ? `Prévu au planning aujourd'hui : ${[plan.midi && 'midi ' + plan.midi.name, plan.soir && 'soir ' + plan.soir.name].filter(Boolean).join(', ')}.` : '',
+    avoid.length ? `Régime / allergies : évite ${avoid.join(', ')}.` : 'Pas de régime particulier.',
+    FRIDGE.have.size ? `Dans son frigo : ${[...FRIDGE.have].join(', ')}.` : '',
+    `Série en cours : ${streak()} jours. Calories économisées au total : ${fmtNum(totalSaved())} kcal.`
+  ].filter(Boolean).join(' ');
+}
+function coachFormat(text){
+  return esc(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
+}
+// Recette inventée par le coach → plat consultable dans l'app (et à garder dans « Mes recettes »)
+function registerCoachRecipe(rc){
+  const id = 'coach_' + Date.now().toString(36) + (++COACH_AI.n);
+  const lvl = { name:rc.name, img:'data:,', desc:rc.desc || 'Recette imaginée par ton coach.', kcal:rc.kcal, p:rc.p, c:rc.c, f:rc.f, time:rc.time, diff:rc.diff, serv:rc.serv,
+    ing:rc.ing, steps:rc.steps, swaps:[['Recette classique', 'Version healthy du coach']], tip:rc.tip || '' };
+  DISHES[id] = { name:rc.name, emoji:rc.emoji || '🍽️', cat:'bowls', keywords:[], origImg:'data:,', aiOnly:true, noCompare:true, coach:true, src:rc,
+    original:{ kcal:rc.kcal, p:rc.p, c:rc.c, f:rc.f, label:rc.name }, levels:[lvl, lvl, lvl, lvl] };
+  return id;
+}
+function coachRecipeCard(k){
+  const d = DISHES[k], r = d.levels[0];
+  return `<div class="cm-new"><span class="cm-new-tag">✨ Recette créée pour toi</span>${coachCard(k, 0)}<button class="cm-keep" data-action="coachKeep" data-dish="${esc(k)}">📝 Garder dans mes recettes</button></div>`;
+}
+function coachKeep(k, btn){
+  const d = DISHES[k]; if(!d || !d.src) return;
+  const rc = d.src;
+  if(PLUS.mine.some(m => m.fromCoach === k)){ toast('Déjà dans tes recettes'); return; }
+  PLUS.mine.unshift({ id:uid(), fromCoach:k, name:rc.name, emoji:rc.emoji || '🍽️', desc:rc.desc || '', time:rc.time, serv:rc.serv, cat:'bowls',
+    ings:rc.ing.map(([e, n, q]) => { const g = String(q).match(/(\d+(?:[.,]\d+)?)\s*g\b/); return { name:n, emoji:e, qty:q, g:g ? Math.round(parseFloat(g[1].replace(',', '.'))) : 0 }; }),
+    steps:rc.steps.map(([t, p, tm]) => ({ t, p, tm })), kcal:rc.kcal, p:rc.p, c:rc.c, f:rc.f, origName:'', origKcal:0, tip:rc.tip || '', created:Date.now() });
+  registerMine(); savePlus();
+  if(btn){ btn.textContent = '✓ Dans mes recettes'; btn.disabled = true; }
+  toast('📝 Recette ajoutée à « Mes recettes »');
+}
+// Réponse du coach : modèle de langage si possible, sinon moteur local
+async function coachAnswer(q){
+  COACH_AI.hist.push({ role:'user', content:q });
+  if(await coachServerReady()){
+    try{
+      const headers = { 'Content-Type':'application/json' }; if(AI.code) headers['X-Access-Code'] = AI.code;
+      const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 35000);
+      let r; try{ r = await fetch(AI.url + '/coach', { method:'POST', headers, signal:ctrl.signal, body:JSON.stringify({ messages:COACH_AI.hist.slice(-12), context:coachContext(), catalog:coachCatalog() }) }); } finally{ clearTimeout(t); }
+      const j = await r.json().catch(() => null);
+      if(j && j.ok && j.reply){
+        let html = coachFormat(j.reply);
+        (j.recipes || []).filter(k => DISHES[k]).forEach(k => { html += coachCard(k, k.startsWith('my_') ? 0 : PREFS.level); });
+        let said = j.reply;
+        if(j.recipe){ const k = registerCoachRecipe(j.recipe); html += coachRecipeCard(k); said += ` (recette proposée : ${j.recipe.name})`; }
+        if(j.recipes && j.recipes.length) said += ' (recettes proposées : ' + j.recipes.filter(k => DISHES[k]).map(k => DISHES[k].levels[k.startsWith('my_') ? 0 : PREFS.level].name).join(', ') + ')';
+        COACH_AI.hist.push({ role:'assistant', content:said.slice(0, 1500) });
+        return html;
+      }
+      if(j && j.error === 'quota') { COACH_AI.hist.pop(); return coachReply(q) + '<span class="cm-note">⚠️ Quota gratuit de l\'IA épuisé pour aujourd\'hui : réponse simplifiée.</span>'; }
+    }catch(_){}
+    COACH_AI.hist.pop();
+    return coachReply(q) + '<span class="cm-note">📶 L\'IA ne répond pas pour l\'instant : réponse simplifiée.</span>';
+  }
+  COACH_AI.hist.pop();
+  let html = coachReply(q);
+  if(AI.url && !COACH_AI.tipShown){
+    COACH_AI.tipShown = true;
+    html += `<button class="cm-upgrade" data-action="coachUpgrade">✨ Débloquer le coach IA complet (mise à jour du serveur)</button>`;
+  }
+  return html;
 }
 /* /PLUS:JS */
 

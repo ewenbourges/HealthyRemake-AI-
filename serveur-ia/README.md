@@ -98,6 +98,13 @@ Safari et Chrome ont leur propre reconnaissance vocale. Ce n'est pas le cas de l
 - Raccourci dans l'app : touche 🎙️ dans le coach. Si le serveur n'est pas à jour, l'app propose **Copier le code du serveur**, puis il ne reste qu'à le coller dans **Edit code** et à faire **Deploy**.
 - L'adresse du Worker doit afficher `"transcribe":true`.
 
+## 12. Coach IA complet
+Le coach de l'app utilise un vrai modèle de langage sur le Worker (route `/coach`) : **Mistral Small 3.1**, avec **Llama 3.3 70B** en secours.
+- L'app lui envoie la conversation, ton suivi du jour (déjà mangé, reste à manger, objectif, profil), ton régime, ton frigo et le catalogue de ses 125 recettes.
+- Il répond à toutes les questions de nutrition, propose les recettes de l'app qui conviennent et invente une recette complète si besoin, qu'on peut garder dans « Mes recettes ».
+- Rien à configurer en plus du binding `AI`. L'adresse du Worker doit afficher `"coach":true`.
+- Il utilise le même quota gratuit Workers AI que l'analyse des photos, soit environ une centaine de questions par jour en plus des analyses. Sans serveur à jour, le coach répond avec son moteur simplifié intégré à l'app.
+
 ## Ce que la mise à jour du Worker ajoute aussi
 - **Scan du frigo** (`/fridge`) : l'IA liste les aliments visibles sur la photo, puis l'app propose les recettes faisables. Il utilise le même quota Workers AI que l'analyse des plats.
 - **Transcription de la voix** (`/transcribe`) : Whisper, pour le coach et le mode cuisine dans l'app installée.

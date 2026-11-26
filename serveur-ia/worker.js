@@ -83,6 +83,7 @@ export default {
     if (path.startsWith('/auth') || path === '/reviews') return handleAuth(request, env, path, reply);
     if (path === '/fridge') return handleFridge(request, env, reply);
     if (path === '/transcribe') return handleTranscribe(request, env, reply);
+    if (path === '/coach') return handleCoach(request, env, reply);
 
     const ready = !!(env && env.AI);
     const codeOk = !env.ACCESS_CODE || request.headers.get('X-Access-Code') === env.ACCESS_CODE;
@@ -90,7 +91,7 @@ export default {
     // Test de connexion depuis l'app
     if (request.method === 'GET') {
       return reply({ ok: ready, service: 'healthyremake-ai', ready, protected: !!env.ACCESS_CODE, code_ok: codeOk,
-        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), mail: !!(env && env.RESEND_API_KEY), google: !!(env && env.GOOGLE_CLIENT_ID), fridge: true, transcribe: true, error: ready ? undefined : 'binding' });
+        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), mail: !!(env && env.RESEND_API_KEY), google: !!(env && env.GOOGLE_CLIENT_ID), fridge: true, transcribe: true, coach: true, error: ready ? undefined : 'binding' });
     }
     if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
     if (!ready) return reply({ ok: false, error: 'binding', detail: "Ajoute le binding Workers AI nommé AI dans les réglages du Worker." }, 500);
@@ -504,4 +505,77 @@ async function handleTranscribe(request, env, reply) {
   const detail = String((last && last.message) || last || 'erreur').slice(0, 200);
   const quota = /limit|quota|neuron|exceed|4006|429|daily/i.test(detail);
   return reply({ ok: false, error: quota ? 'quota' : 'ai', detail: quota ? 'Quota gratuit du jour épuisé.' : detail }, quota ? 429 : 502);
+}
+
+/* ---------- Coach IA : conversation libre sur la nutrition et les recettes ----------
+   L'app envoie l'historique de la conversation, le contexte de l'utilisateur (suivi du
+   jour, objectif, régime, frigo) et le catalogue de ses recettes. Le modèle répond en
+   JSON : un message, jusqu'à 3 recettes de l'app, et si besoin une recette inventée. */
+const COACH_MODELS = [
+  { id: '@cf/mistralai/mistral-small-3.1-24b-instruct', limit: 'max_tokens' },
+  { id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', limit: 'max_tokens' }
+];
+const COACH_SYSTEM = `Tu es le coach nutrition de HealthyRemake AI, une app qui transforme les plats gourmands (fast-food, street food, desserts…) en versions healthy.
+Tu parles français, tu tutoies, tu es chaleureux, motivant, précis et concret. Tu réponds à TOUTE question liée à l'alimentation : idées de repas, recettes complètes, quantités, cuisson, substitutions, macros, calories, protéines, batch cooking, courses, budget, sport et récupération, perte de poids, prise de muscle, régimes (végétarien, sans gluten, sans lactose, halal…), allergies, astuces du quotidien.
+Règles :
+- Utilise le contexte de l'utilisateur (ce qu'il a déjà mangé aujourd'hui, ce qu'il lui reste, son objectif, son régime, son frigo) pour personnaliser chaque réponse et donner des chiffres.
+- Quand une recette du catalogue de l'app convient, propose-la par sa clé dans "recipes" (1 à 3 clés, uniquement des clés présentes dans le catalogue).
+- Quand l'utilisateur demande une recette précise, une liste d'ingrédients, des étapes, ou quelque chose qui n'existe pas dans le catalogue, écris une recette complète et réaliste dans "recipe" (quantités précises pour 1 portion, macros cohérentes : kcal ≈ 4×p + 4×c + 9×f).
+- Le champ "reply" est le message affiché et lu à voix haute : 2 à 6 phrases naturelles, sans liste à rallonge, sans markdown sauf **gras** pour 1 à 3 mots importants. Ne recopie pas la recette dedans, elle s'affiche à part.
+- Pas de diagnostic médical : pour une maladie, une grossesse, un trouble alimentaire ou un médicament, donne des repères généraux prudents et conseille un professionnel de santé.
+- Si la question n'a rien à voir avec l'alimentation, réponds brièvement avec gentillesse puis ramène la conversation vers la nutrition.
+Tu réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
+{"reply":"…","recipes":["clé"],"recipe":null}
+ou, avec une recette inventée :
+{"reply":"…","recipes":[],"recipe":{"name":"…","emoji":"🥗","desc":"une phrase","time":"20 min","diff":"Facile","serv":"1 pers.","kcal":0,"p":0,"c":0,"f":0,"ing":[["🥬","ingrédient","quantité"]],"steps":[["Titre court","Instruction claire","5 min"]],"tip":"une astuce"}}`;
+async function handleCoach(request, env, reply) {
+  if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
+  if (!env.AI) return reply({ ok: false, error: 'binding', detail: 'Ajoute le binding Workers AI nommé AI.' }, 500);
+  if (env.ACCESS_CODE && request.headers.get('X-Access-Code') !== env.ACCESS_CODE) return reply({ ok: false, error: 'code', detail: "Code d'accès manquant ou incorrect." }, 401);
+  let body; try { body = await request.json(); } catch { return reply({ ok: false, error: 'json' }, 400); }
+  const str = (v, n) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
+  const history = (Array.isArray(body.messages) ? body.messages : []).slice(-12)
+    .map(m => ({ role: m && m.role === 'assistant' ? 'assistant' : 'user', content: str(m && m.content, 1500) })).filter(m => m.content);
+  if (!history.length || history[history.length - 1].role !== 'user') return reply({ ok: false, error: 'message', detail: 'Message vide.' }, 400);
+  const catalog = (Array.isArray(body.catalog) ? body.catalog : []).slice(0, 260).map(x => str(x, 110)).filter(x => /^[a-z0-9_]+:/.test(x));
+  const keys = new Set(catalog.map(x => x.split(':')[0]));
+  const context = str(typeof body.context === 'string' ? body.context : JSON.stringify(body.context || {}), 2500);
+  const messages = [
+    { role: 'system', content: COACH_SYSTEM },
+    { role: 'system', content: `Contexte de l'utilisateur : ${context}\n\nCatalogue des recettes de l'app (clé:nom|kcal|protéines|temps|catégorie) :\n${catalog.join('\n')}` },
+    ...history
+  ];
+  const models = env.COACH_MODEL ? [{ id: env.COACH_MODEL, limit: 'max_tokens' }] : COACH_MODELS;
+  let last = null;
+  for (const model of models) {
+    try {
+      const out = await env.AI.run(model.id, { messages, temperature: 0.5, [model.limit]: 1600 });
+      const raw = textOf(out);
+      const data = parseJSON(raw) || (raw && !raw.trim().startsWith('{') ? { reply: raw } : null);
+      if (!data || !data.reply) throw new Error('Réponse illisible du modèle');
+      return reply({ ok: true, model: model.id.split('/').pop(), ...cleanCoach(data, keys) });
+    } catch (e) { last = e; }
+  }
+  const detail = String((last && last.message) || last || 'erreur').slice(0, 200);
+  const quota = /limit|quota|neuron|exceed|4006|429|daily/i.test(detail);
+  return reply({ ok: false, error: quota ? 'quota' : 'ai', detail: quota ? 'Quota gratuit du jour épuisé.' : detail }, quota ? 429 : 502);
+}
+function cleanCoach(d, keys) {
+  const num = (v, max) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(max, Math.max(0, n)) : 0; };
+  const str = (v, n) => (v == null ? '' : String(v)).replace(/[<>]/g, '').replace(/[ \t]+/g, ' ').trim().slice(0, n);
+  const list = v => (Array.isArray(v) ? v : []);
+  const out = { reply: str(d.reply, 2000), recipes: list(d.recipes).map(k => String(k).split(':')[0].trim()).filter(k => keys.has(k)).slice(0, 3), recipe: null };
+  const h = d.recipe;
+  if (h && typeof h === 'object') {
+    const ing = list(h.ing).map(x => Array.isArray(x) ? x : [x && x.emoji, x && (x.name || x.nom), x && (x.qty || x.quantite || x.quantity)])
+      .map(([e, n, q]) => [str(e, 8) || '🥄', str(n, 60), str(q, 30) || 'selon goût']).filter(x => x[1]).slice(0, 15);
+    const steps = list(h.steps).map(x => Array.isArray(x) ? x : typeof x === 'string' ? ['', x, ''] : [x && (x.title || x.titre), x && (x.text || x.texte), x && (x.time || x.duree)])
+      .map(([t, p, tm], i) => [str(t, 50) || `Étape ${i + 1}`, str(p, 400), str(tm, 20) || '5 min']).filter(x => x[1]).slice(0, 10);
+    if (ing.length >= 2 && steps.length >= 1) {
+      let p = num(h.p, 400), c = num(h.c, 600), f = num(h.f, 300);
+      out.recipe = { name: str(h.name, 90) || 'Recette du coach', emoji: str(h.emoji, 8) || '🍽️', desc: str(h.desc, 200), time: str(h.time, 20) || '20 min',
+        diff: str(h.diff, 20) || 'Facile', serv: str(h.serv, 20) || '1 pers.', kcal: Math.round(4 * p + 4 * c + 9 * f) || num(h.kcal, 4000), p, c, f, ing, steps, tip: str(h.tip, 240) };
+    }
+  }
+  return out;
 }
