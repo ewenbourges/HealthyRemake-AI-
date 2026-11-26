@@ -6643,7 +6643,6 @@ function settingsHTML(){
 
     <div class="set-title">Données</div>
     <div class="set-group">
-      ${row('🎬', 'Mode présentation', 'Remplit l\'app comme un utilisateur régulier', CHEV, 'data-action="presSheet"')}
       ${row('📦', 'Exporter mes données', 'Fichier JSON de tout ce que l\'app garde', CHEV, 'data-action="exportData"')}
       ${row('🤍', 'Vider mes favoris', '', CHEV, 'data-action="acctSheet" data-mode="clearFavs"')}
       ${row('↺', 'Réinitialiser l\'app', 'Efface les réglages de cet appareil', CHEV, 'data-action="acctSheet" data-mode="reset"', 'danger')}
@@ -6806,7 +6805,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-6';
+const APP_VERSION = '2026.11.26-7';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -8278,6 +8277,7 @@ function plusOnShow(id){
 
 /* ---------- Démarrage ---------- */
 function plusInit(){
+  autoSeed();
   detectDemo();
   registerMine();
   BADGE_READY = true; checkBadges();
@@ -8459,7 +8459,7 @@ function presSheet(){
     </form>`, 'acct-sheet-body');
 }
 const pickExisting = keys => keys.filter(k => DISHES[k]);
-async function seedPresentation(name, sex){
+async function seedPresentation(name, sex, silent = false){
   BADGE_READY = false;
   const today = isoDay(), now = new Date();
   const at = (iso, h, m = 0) => { const d = dateOf(iso); d.setHours(h, m); return d.getTime(); };
@@ -8543,9 +8543,18 @@ async function seedPresentation(name, sex){
   BADGE_READY = true;
   Object.keys(PUB).forEach(k => delete PUB[k]);
   refreshAfterPrefs(); renderHomeDash();
+  if(silent){ if(state.screen === 's-account') renderAccount(); return; }
   state.history = []; go('s-home', { back:true, push:false });
   $('#s-home').scrollTo({ top:0 });
   toast(`🎬 App prête pour la présentation, bienvenue ${name} !`);
+}
+// Dès la première ouverture (et après « Réinitialiser l'app »), l'app est déjà remplie
+// comme celle d'un utilisateur régulier
+const SEED_KEY = 'hr-seeded-v1';
+function autoSeed(){
+  let done = false; try{ done = !!localStorage.getItem(SEED_KEY); localStorage.setItem(SEED_KEY, '1'); }catch(_){ done = true; }
+  if(done) return;
+  seedPresentation('Alex', 'm', true).catch(() => {});
 }
 document.addEventListener('submit', async e => {
   if(e.target.id !== 'presForm') return;
