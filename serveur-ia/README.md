@@ -52,6 +52,27 @@ Ouvre-la dans ton navigateur. Tu dois voir une ligne qui commence par `{"ok":tru
 
 Ces réglages sont gardés sur chaque appareil. Pour que l'IA soit active partout sans rien saisir, mets l'adresse dans `AI_DEFAULT_URL` en haut du code de l'IA dans `index.html`. Le code d'accès, lui, ne va jamais dans le dépôt.
 
+## 8. Activer les comptes (onglet Compte)
+L'onglet **Compte** permet de créer un compte avec un e-mail et un mot de passe. Les favoris, l'objectif et les réglages sont alors retrouvés sur tous les appareils. Les comptes sont gérés par ce même Worker et stockés dans **Cloudflare KV**, gratuit lui aussi.
+
+1. Mets à jour le code du Worker : **Edit code**, remplace tout par le nouveau [`worker.js`](worker.js), puis **Deploy**.
+2. Dans le menu de gauche, ouvre **Storage & Databases**, puis **KV** (parfois **Workers KV**).
+3. Clique sur **Create** (ou **Create a namespace**), nomme-le `healthyremake-users`, puis valide.
+4. Retourne sur la page du Worker : **Settings**, puis **Bindings**, puis **Add** et choisis **KV namespace**.
+5. Dans **Variable name**, écris exactement `USERS` (en majuscules) et choisis `healthyremake-users`. Enregistre et déploie.
+6. Ouvre l'adresse du Worker dans ton navigateur : la ligne doit maintenant contenir `"accounts":true`.
+
+Bon à savoir sur les comptes :
+- **Sécurité :** les mots de passe ne sont jamais stockés. Le serveur garde seulement une empreinte PBKDF2-SHA256 (100 000 itérations, sel aléatoire par compte). Après 8 essais ratés, la connexion est bloquée 15 minutes.
+- **Sessions :** on reste connecté 30 jours sur chaque appareil. « Se déconnecter » ferme la session sur le serveur.
+- **Quota gratuit KV :** 100 000 lectures et 1 000 écritures par jour. Une connexion ou une synchronisation coûte 1 à 3 écritures, c'est largement assez pour un petit groupe d'utilisateurs.
+- **Mot de passe oublié :** la réinitialisation par e-mail n'existe pas encore, car il faudrait un service d'envoi d'e-mails. Un utilisateur connecté peut changer son mot de passe depuis **Compte**.
+
+| Message dans l'onglet Compte | Solution |
+|---|---|
+| Le serveur Cloudflare doit être mis à jour | Refais l'étape 1 de cette section. |
+| Il manque le stockage KV « USERS » | Refais les étapes 2 à 5. |
+
 ## Ce que fait l'analyse
 - **Plat présent dans l'app** (125 plats) : l'app affiche sa recette healthy en 4 niveaux. Une carte « Analyse IA réelle » donne le plat reconnu, la confiance, la portion, les calories estimées et les ingrédients repérés.
 - **Plat absent de l'app** : l'IA écrit une recette healthy complète (ingrédients, étapes, remplacements, astuce).

@@ -637,7 +637,7 @@ body.booting .side{opacity:0;transform:translateY(14px)}
 .nav-scan:hover{transform:translateY(-2px)}
 .nav-scan:active{transform:scale(.92)}
 .nav-scan svg{width:28px;height:28px}
-#s-home,#s-library,#s-videos{padding-bottom:120px}
+#s-home,#s-library,#s-videos,#s-account{padding-bottom:120px}
 .nav-badge{position:absolute;top:1px;left:50%;margin-left:5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--coral);color:#fff;font-size:10px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--card);animation:pop .4s var(--ease)}
 .nav-badge[hidden]{display:none}
 
@@ -998,6 +998,98 @@ h1.display em,.side h2 em{font-weight:700;font-style:normal}
   .tabs button{font-size:13px}
   .range-labels button{font-size:10.5px}
 }
+
+/* ---------- Compte & réglages ---------- */
+#s-account .lib-title{margin-bottom:2px}
+.acct-banner{margin:6px 0 16px}
+.acct-banner .vb-title{font-size:26px}
+.acct-perks{display:grid;gap:7px;margin-top:14px}
+.acct-perks span{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:rgba(255,255,255,.92)}
+.acct-perks i{font-style:normal;width:26px;height:26px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.16);font-size:13px;flex:none}
+.auth-card{padding:16px 16px 18px}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--bg-2);border-radius:16px;padding:5px;margin-bottom:16px}
+.seg button{position:relative;z-index:1;padding:10px 6px;border-radius:12px;font-weight:600;font-size:14px;color:var(--muted);transition:color .25s;white-space:nowrap}
+.seg button.on{color:var(--ink)}
+.seg .ind{position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm);transition:transform .35s var(--ease)}
+.seg[data-mode="signup"] .ind{transform:translateX(100%)}
+html[data-theme="dark"] .seg .ind{background:#25322B}
+.auth-fields{animation:panelIn .4s var(--ease)}
+.auth-fields.from-r{animation:panelInR .4s var(--ease)}
+.auth-fields.from-l{animation:panelInL .4s var(--ease)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:52px}
+.pw-eye{position:absolute;right:5px;bottom:5px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted)}
+.pw-eye:hover{background:var(--bg-2);color:var(--ink)}
+.pw-eye svg{width:20px;height:20px}
+.pw-meter{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:-2px 2px 6px}
+.pw-meter i{height:5px;border-radius:9px;background:var(--line);transition:background .3s}
+.pw-meter[data-s="1"] i:nth-child(-n+1){background:var(--coral)}
+.pw-meter[data-s="2"] i:nth-child(-n+2){background:var(--amber)}
+.pw-meter[data-s="3"] i:nth-child(-n+3){background:var(--emerald)}
+.pw-meter[data-s="4"] i{background:var(--emerald-d)}
+.pw-hint{font-size:12px;color:var(--muted);margin:0 2px 14px;font-weight:500}
+.form-err{font-size:13px;font-weight:600;border-radius:14px;padding:11px 13px;margin:0 0 14px;background:rgba(240,138,108,.12);color:#C2410C;border:1px solid rgba(240,138,108,.35);animation:panelIn .3s var(--ease)}
+.form-err[hidden]{display:none}
+html[data-theme="dark"] .form-err{color:#FDBA9F}
+.auth-card .btn{margin-top:2px}
+.btn.busy{pointer-events:none;opacity:.75}
+.btn .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
+.auth-alt{display:flex;justify-content:center;margin-top:10px}
+.auth-legal{font-size:11.5px;color:var(--muted);text-align:center;margin:12px 6px 0;line-height:1.45}
+.profile-card{display:flex;align-items:center;gap:14px;padding:16px;margin-top:6px;animation:reveal .5s var(--ease) both}
+.avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(140deg,#14B981,#087A54);color:#fff;font-weight:700;font-size:21px;display:grid;place-items:center;flex:none;box-shadow:0 0 0 4px var(--pastel)}
+.profile-card .who{min-width:0;flex:1}
+.profile-card .who b{display:block;font-size:18px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-card .who span{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-card .who .sync-pill,.sync-pill{display:inline-flex;width:auto;align-items:center;gap:6px;margin-top:7px;font-size:11.5px;font-weight:600;color:var(--emerald-d);background:var(--pastel-2);padding:4px 10px;border-radius:99px}
+.sync-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.sync-pill.saving::before{animation:pulse 1.2s infinite}
+.sync-pill.error{color:var(--coral-ink);background:var(--coral-l)}
+.acct-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.acct-stats div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 6px;text-align:center;min-width:0}
+.acct-stats b{display:block;font-size:18px;font-weight:700;color:var(--emerald-d);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct-stats span{font-size:11.5px;color:var(--muted);font-weight:500}
+.acct-stats b.sm{font-size:15px;line-height:1.6}
+.bottom-nav.show ~ .toast{bottom:112px}
+.set-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:24px 4px 9px}
+.set-group{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.set-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;text-align:left;border-top:1px solid var(--line);transition:background .2s;cursor:pointer;color:var(--ink)}
+.set-row:first-child{border-top:0}
+.set-row:hover{background:var(--pastel-2)}
+.set-row .ic{width:36px;height:36px;border-radius:11px;background:var(--pastel-2);display:grid;place-items:center;font-size:17px;flex:none}
+.set-row .tx{flex:1;min-width:0}
+.set-row .tx b{display:block;font-size:14.5px;font-weight:600;line-height:1.3}
+.set-row .tx span{display:block;font-size:12px;color:var(--muted);font-weight:500;line-height:1.35}
+.set-row .val{font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.set-row .val.ok{color:var(--emerald-d)}
+.set-row .chev{color:var(--muted);flex:none;width:18px;height:18px}
+.set-row.danger .tx b{color:var(--coral-ink)}
+.set-row.danger .ic{background:var(--coral-l)}
+html[data-theme="dark"] .set-row.danger .tx b{color:#F5A48C}
+.switch{position:relative;flex:none;display:block}
+.switch input{position:absolute;opacity:0;pointer-events:none}
+.switch .sw{display:block;width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
+.switch .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .25s var(--ease)}
+.switch input:checked + .sw{background:var(--emerald)}
+.switch input:checked + .sw::after{transform:translateX(18px)}
+.switch input:focus-visible + .sw{box-shadow:0 0 0 4px var(--pastel)}
+.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.goal{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px;text-align:left;transition:border-color .2s, background .2s, transform .2s var(--ease), box-shadow .2s}
+.goal:active{transform:scale(.97)}
+.goal .e{font-size:22px;line-height:1;display:block}
+.goal b{display:block;font-size:14px;font-weight:600;margin-top:7px;line-height:1.25}
+.goal span{display:block;font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.goal.on{border-color:var(--emerald);background:var(--pastel-2);box-shadow:0 0 0 3px var(--pastel-2)}
+.goal.on .e{animation:navPop .45s var(--ease)}
+.set-note{font-size:12px;color:var(--muted);margin:8px 4px 0;line-height:1.45}
+.acct-foot{text-align:center;font-size:12px;color:var(--muted);margin:26px 10px 0;line-height:1.5}
+.acct-sheet-body .btn + .btn{margin-top:10px}
+.acct-sheet-body .warn{background:var(--coral-l);color:var(--coral-ink);border-radius:14px;padding:11px 13px;font-size:13px;font-weight:600;margin-bottom:14px}
+html[data-theme="dark"] .acct-sheet-body .warn{background:rgba(240,138,108,.14);color:#F5A48C}
+.btn-danger{background:linear-gradient(135deg,#EF7B5A,#D45A3A);color:#fff;box-shadow:0 12px 24px -12px rgba(212,90,58,.8)}
+.btn-danger:active{transform:scale(.98)}
+html.reduce-motion *,html.reduce-motion *::before,html.reduce-motion *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
@@ -1387,6 +1479,14 @@ Splash.boot();
         <div class="ch-cards" id="vidChannels"></div>
         <div class="vid-list" id="vidList"></div>
       </section>
+
+      <section class="screen" id="s-account" aria-label="Compte et réglages">
+        <div class="topbar">
+          <div><div class="topbar-kicker">Mon espace</div><div class="lib-title">Compte</div></div>
+        </div>
+        <div id="acctTop"></div>
+        <div id="acctSettings"></div>
+      </section>
     </div>
 
     <!-- Bottom nav -->
@@ -1396,7 +1496,7 @@ Splash.boot();
       <button class="nav-it" data-action="navLibrary" data-nav="s-library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M8 7h7M8 11h5"/></svg><span>Recettes</span></button>
       <button class="nav-scan" data-action="scan" aria-label="Scanner un plat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/></svg></button>
       <button class="nav-it" data-action="navVideos" data-nav="s-videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="m10 9.2 5 2.8-5 2.8Z" fill="currentColor"/></svg><span>Vidéos</span><b class="nav-badge" id="vidBadge" hidden>0</b></button>
-      <button class="nav-it" data-action="navFavs" data-nav="fav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span>Favoris</span></button>
+      <button class="nav-it" data-action="navAccount" data-nav="s-account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Compte</span></button>
     </nav>
 
     <input type="file" id="camFileInput" accept="image/*" hidden>
@@ -1439,6 +1539,11 @@ Splash.boot();
       <label class="ai-toggle"><input type="checkbox" id="aiOn" checked><span class="sw"></span><b>Utiliser l'IA réelle pour mes photos</b></label>
       <div class="ai-actions"><button class="btn btn-ghost" data-action="aiTest">Tester</button><button class="btn btn-primary" data-action="aiSave">Enregistrer</button></div>
       <p class="fx-note" style="margin-top:14px">Guide d'installation (gratuit, environ 10 minutes) : dossier « serveur-ia » de ton dépôt GitHub. Tes photos sont envoyées à ton serveur uniquement pour l'analyse.</p>
+    </div>
+
+    <div class="sheet sheet-tall" id="acctSheet" role="dialog" aria-label="Compte">
+      <div class="grab"></div>
+      <div class="acct-sheet-body" id="acctSheetBody"></div>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -4542,13 +4647,21 @@ const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').
 const state = { screen:'s-home', history:[], dish:'burger', level:1, photo:null, fileName:null, tab:'recipe', liked:{}, loadToken:0, rendered:null,
   hint:'auto', source:'scan', libCat:'all', libQuery:'' };
 try{ state.liked = JSON.parse(localStorage.getItem('hr-favs') || '{}') || {}; }catch(_){ state.liked = {}; }
-function saveFavs(){ try{ localStorage.setItem('hr-favs', JSON.stringify(state.liked)); }catch(_){} }
+function saveFavs(){ try{ localStorage.setItem('hr-favs', JSON.stringify(state.liked)); }catch(_){} localChanged(); }
+
+/* Préférences de l'utilisateur (onglet Compte) */
+var PREFS_DEFAULT = { level:1, vibrate:true, vidAlerts:true, reduceMotion:false };
+var PREFS = { ...PREFS_DEFAULT };
+try{ Object.assign(PREFS, JSON.parse(localStorage.getItem('hr-prefs') || '{}') || {}); }catch(_){}
+PREFS.level = [0,1,2,3].includes(+PREFS.level) ? +PREFS.level : 1;
+document.documentElement.classList.toggle('reduce-motion', !!PREFS.reduceMotion);
+function buzz(ms){ if(PREFS.vibrate && navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} }
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
 function setImg(img, src){ img.style.display=''; img.parentNode.classList.remove('img-fallback'); img.onerror=()=>imgFail(img); img.src=src; }
 
-const TAB_ORDER = ['s-home','s-library','s-videos'];
+const TAB_ORDER = ['s-home','s-library','s-videos','s-account'];
 function go(id, {back=false, push=true}={}){
   if(id === state.screen) return;
   if(state.screen === 's-camera') stopCamera();
@@ -4589,7 +4702,7 @@ function toast(msg){
    ========================================================= */
 function renderExamples(){
   $('#examples').innerHTML = HOME_EX.map(k=>{
-    const d = DISHES[k], best = d.levels[1];
+    const d = DISHES[k], best = d.levels[PREFS.level];
     const pct = Math.round((1 - best.kcal/d.original.kcal)*100);
     return `<button class="ex-card" data-action="example" data-dish="${k}">
       <div class="ph" data-emoji="${d.emoji}"><img loading="lazy" src="${d.origImg}" alt="${d.name}" onerror="imgFail(this)"><span class="badge-abs">−${pct} % kcal</span></div>
@@ -4599,9 +4712,9 @@ function renderExamples(){
 }
 function renderFeatured(){
   $('#featured').innerHTML = FEATURED.map(k=>{
-    const d = DISHES[k], r = d.levels[1];
+    const d = DISHES[k], r = d.levels[PREFS.level];
     const pct = Math.round((1 - r.kcal/d.original.kcal)*100);
-    return `<button class="fx-card" data-action="openRecipe" data-dish="${k}" data-level="1">
+    return `<button class="fx-card" data-action="openRecipe" data-dish="${k}" data-level="${PREFS.level}">
       <div class="ph" data-emoji="${d.emoji}"><img loading="lazy" src="${d.origImg}" alt="${d.name}" onerror="imgFail(this)"><span class="badge-abs">−${pct} % kcal</span><span class="brand-pill">⭐ ${d.brand}</span></div>
       <div class="body"><b>${d.name}</b><div class="meta"><s>≈ ${d.original.kcal}</s> → <strong>${r.kcal} kcal</strong> · 💪 ${r.p} g</div></div>
     </button>`;
@@ -4621,14 +4734,14 @@ function renderHomeCats(){
    Navigation basse & bibliothèque
    ========================================================= */
 function updateNav(id){
-  $('#bottomNav').classList.toggle('show', id==='s-home' || id==='s-library' || id==='s-videos');
+  $('#bottomNav').classList.toggle('show', TAB_ORDER.includes(id));
   refreshNavOn(id);
   if(id==='s-home') renderHomeCats();
   if(id==='s-library') renderLibList();
+  if(id==='s-account') renderAccount();
 }
 function refreshNavOn(id = state.screen){
-  const fav = id === 's-library' && state.libCat === 'fav';
-  $$('#bottomNav .nav-it').forEach(b => b.classList.toggle('on', fav ? b.dataset.nav === 'fav' : b.dataset.nav === id));
+  $$('#bottomNav .nav-it').forEach(b => b.classList.toggle('on', b.dataset.nav === id));
   moveNavPill();
 }
 function moveNavPill(){
@@ -4681,7 +4794,7 @@ function renderLibList(){
     items = Object.keys(state.liked).filter(x=>state.liked[x]).map(x=>{ const [k,l] = x.split('-'); return [k, +l]; })
       .filter(([k,l])=>DISHES[k] && DISHES[k].levels[l] && match(k,l));
   } else {
-    items = LIB_ORDER.filter(k=>(state.libCat==='all' || (state.libCat==='vedette' ? DISHES[k].featured : DISHES[k].cat===state.libCat)) && match(k)).map(k=>[k,1]);
+    items = LIB_ORDER.filter(k=>(state.libCat==='all' || (state.libCat==='vedette' ? DISHES[k].featured : DISHES[k].cat===state.libCat)) && match(k)).map(k=>[k,PREFS.level]);
   }
   const n = items.length;
   $('#libNote').hidden = state.libCat !== 'vedette';
@@ -5214,7 +5327,7 @@ function setTab(t){
 $('#rangeLabels').innerHTML = LEVELS.map((l,i)=>`<button data-level="${i}"><span class="em">${l.emoji}</span>${l.short}</button>`).join('');
 $('#levelRange').addEventListener('input', e => {
   const v = +e.target.value;
-  if(v !== state.level){ state.level = v; renderResult(true); if(navigator.vibrate) navigator.vibrate(8); }
+  if(v !== state.level){ state.level = v; renderResult(true); buzz(8); }
 });
 
 /* ---------- Sheet choix du plat ---------- */
@@ -5269,7 +5382,7 @@ function resetApp(){
   if(state.screen === 's-camera') stopCamera();
   closeSheet();
   resetUpload();
-  state.history = []; state.tab = 'recipe'; state.level = 1; state.source = 'scan';
+  state.history = []; state.tab = 'recipe'; state.level = PREFS.level; state.source = 'scan';
   state.libCat = 'all'; state.libQuery = ''; $('#libSearch').value = '';
   renderLibChips(); renderLibList();
   VID.filter = 'all';
@@ -5521,7 +5634,7 @@ async function refreshVideos(manual = false){
 
 function newCount(){ return shownVideos().filter(v => v.published > VID.seenAt).length; }
 function updateVidBadge(){
-  const n = VID.seenAt ? newCount() : 0, b = $('#vidBadge');
+  const n = PREFS.vidAlerts && VID.seenAt ? newCount() : 0, b = $('#vidBadge');
   b.hidden = !n; b.textContent = n > 9 ? '9+' : n;
 }
 // Ouvrir l'onglet : on mémorise ce qui est nouveau pour l'afficher pendant la visite
@@ -5565,7 +5678,7 @@ function videoCard(v, c, i){
       </div>
       <div class="vbody"><b>${esc(v.title)}</b></div>
     </a>
-    <div class="vmeta"><span>${esc(ago(v.published))} · YouTube ↗</span>${k ? `<button class="match" data-action="openRecipe" data-dish="${k}" data-level="1">${DISHES[k].emoji} Version healthy</button>` : ''}</div>
+    <div class="vmeta"><span>${esc(ago(v.published))} · YouTube ↗</span>${k ? `<button class="match" data-action="openRecipe" data-dish="${k}" data-level="${PREFS.level}">${DISHES[k].emoji} Version healthy</button>` : ''}</div>
   </div>`;
 }
 
@@ -5731,6 +5844,421 @@ applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light')
 /* =========================================================
    Délégation des actions
    ========================================================= */
+
+/* =========================================================
+   Compte : connexion e-mail + mot de passe, réglages synchronisés
+   (comptes gérés par le serveur Cloudflare, voir serveur-ia/README.md)
+   ========================================================= */
+const GOALS = [
+  { t:'Me faire plaisir', d:'Le goût avant tout' },
+  { t:'Manger équilibré', d:'Le bon compromis' },
+  { t:'Perdre du poids', d:'Moins de calories' },
+  { t:'Prendre du muscle', d:'Un max de protéines' }
+];
+const EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.4M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.4-1.6M3 3l18 18M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+
+var ACCT = { session:null, mode:'login', syncTimer:0, sync:'ok' };
+try{ ACCT.session = JSON.parse(localStorage.getItem('hr-session') || 'null'); }catch(_){}
+if(!ACCT.session || !ACCT.session.token || !ACCT.session.user) ACCT.session = null;
+setTimeout(() => refreshSession(), 900);   // récupère les favoris / réglages du compte au lancement
+
+function saveSession(){ try{ ACCT.session ? localStorage.setItem('hr-session', JSON.stringify(ACCT.session)) : localStorage.removeItem('hr-session'); }catch(_){} }
+function localMod(){ try{ return +localStorage.getItem('hr-localmod') || 0; }catch(_){ return 0; } }
+function setLocalMod(t){ try{ localStorage.setItem('hr-localmod', String(t)); }catch(_){} }
+function localChanged(){ setLocalMod(Date.now()); syncSoon(); }
+function savePrefs(){
+  try{ localStorage.setItem('hr-prefs', JSON.stringify(PREFS)); }catch(_){}
+  document.documentElement.classList.toggle('reduce-motion', !!PREFS.reduceMotion);
+  localChanged();
+}
+
+const AUTH_MSG = {
+  no_server:"Aucun serveur n'est relié à l'app : les comptes ont besoin du serveur Cloudflare (Réglages → Analyse IA).",
+  network:'Serveur injoignable. Vérifie ta connexion internet et réessaie.',
+  old_server:"Les comptes ne sont pas encore activés : le serveur Cloudflare doit être mis à jour (guide dans le dossier serveur-ia).",
+  accounts_off:"Les comptes ne sont pas encore activés sur le serveur : il manque le stockage KV « USERS » (guide dans le dossier serveur-ia).",
+  rate:'Trop de tentatives. Réessaie dans quelques minutes.',
+  quota:'Limite gratuite du jour atteinte, réessaie demain.'
+};
+async function api(method, path, body){
+  const base = AI.url;
+  if(!base) throw aiErr('no_server', AUTH_MSG.no_server);
+  const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 15000);
+  let r;
+  try{
+    const headers = { 'Content-Type':'application/json' };
+    if(ACCT.session) headers.Authorization = 'Bearer ' + ACCT.session.token;
+    r = await fetch(base + path, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: ctrl.signal });
+  }catch(_){ throw aiErr('network', AUTH_MSG.network); }
+  finally{ clearTimeout(t); }
+  let j = null; try{ j = await r.json(); }catch(_){}
+  // Ancien serveur (sans comptes) : il répond comme pour une analyse de photo
+  if(!j || j.service || ['image','json','code','binding','method'].includes(j.error)) throw aiErr('old_server', AUTH_MSG.old_server);
+  if(!j.ok){
+    if(j.error === 'session'){ sessionExpired(); throw aiErr('session', 'Session expirée, reconnecte-toi.'); }
+    throw aiErr(j.error || 'http', AUTH_MSG[j.error] || j.detail || 'Erreur du serveur, réessaie.');
+  }
+  return j;
+}
+
+function sessionExpired(){
+  if(!ACCT.session) return;
+  ACCT.session = null; saveSession();
+  toast('🔒 Session expirée, reconnecte-toi');
+  if(state.screen === 's-account') renderAccount();
+}
+function userData(){ return { favs: state.liked, prefs: PREFS, theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light' }; }
+function syncSoon(){
+  if(!ACCT.session) return;
+  clearTimeout(ACCT.syncTimer);
+  ACCT.sync = 'saving'; updateSyncPill();
+  ACCT.syncTimer = setTimeout(pushData, 1200);
+}
+async function pushData(){
+  if(!ACCT.session) return;
+  clearTimeout(ACCT.syncTimer);
+  ACCT.sync = 'saving'; updateSyncPill();
+  try{ const j = await api('PUT', '/auth/data', { data: userData() }); setLocalMod(j.savedAt || Date.now()); ACCT.sync = 'ok'; }
+  catch(e){ ACCT.sync = 'error'; }
+  updateSyncPill();
+}
+function adoptRemote(data, merge){
+  if(!data || typeof data !== 'object') return;
+  if(data.favs && typeof data.favs === 'object'){
+    const favs = merge ? { ...data.favs, ...state.liked } : { ...data.favs };
+    Object.keys(favs).forEach(k => { if(!favs[k] || !/^[a-z0-9_]+-[0-3]$/.test(k)) delete favs[k]; });
+    state.liked = favs;
+    try{ localStorage.setItem('hr-favs', JSON.stringify(state.liked)); }catch(_){}
+  }
+  if(data.prefs && typeof data.prefs === 'object'){
+    Object.keys(PREFS_DEFAULT).forEach(k => { if(k in data.prefs) PREFS[k] = k === 'level' ? ([0,1,2,3].includes(+data.prefs.level) ? +data.prefs.level : 1) : !!data.prefs[k]; });
+    try{ localStorage.setItem('hr-prefs', JSON.stringify(PREFS)); }catch(_){}
+    document.documentElement.classList.toggle('reduce-motion', !!PREFS.reduceMotion);
+  }
+  if(data.theme === 'dark' || data.theme === 'light') applyTheme(data.theme);
+  refreshAfterPrefs();
+}
+function refreshAfterPrefs(){
+  renderExamples(); renderFeatured();
+  if(state.screen === 's-library') renderLibList();
+  try{ updateVidBadge(); }catch(_){}
+}
+async function refreshSession(){
+  if(!ACCT.session) return;
+  try{
+    const j = await api('GET', '/auth/me');
+    ACCT.session.user = j.user; saveSession();
+    const remoteAt = (j.data && j.data.savedAt) || 0;
+    if(remoteAt > localMod()){ adoptRemote(j.data, false); setLocalMod(remoteAt); ACCT.sync = 'ok'; }
+    else if(localMod() > remoteAt) await pushData();
+    else ACCT.sync = 'ok';
+  }catch(e){ if(e.code !== 'session') ACCT.sync = 'error'; }
+  if(state.screen === 's-account') renderAccount();
+}
+
+/* ---------- Mot de passe ---------- */
+function pwScore(p){
+  if(!p) return 0;
+  let s = 0;
+  if(p.length >= 8) s++;
+  if(p.length >= 12) s++;
+  if(/[a-z]/.test(p) && /[A-Z]/.test(p)) s++;
+  if(/[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p)) s++;
+  if(p.length < 8) return 1;
+  return Math.max(1, Math.min(4, s));
+}
+const PW_LABEL = ['Au moins 8 caractères, avec une lettre et un chiffre', 'Trop faible', 'Moyen', 'Solide', 'Excellent 💪'];
+function pwProblem(p){
+  if(p.length < 8) return 'Le mot de passe doit faire au moins 8 caractères.';
+  if(!/[A-Za-z]/.test(p) || !/[0-9]/.test(p)) return 'Le mot de passe doit contenir au moins une lettre et un chiffre.';
+  return '';
+}
+const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+function pwField(id, label, auto, meter){
+  return `<label class="ai-field"><span>${label}</span><div class="pw-wrap"><input id="${id}" type="password" autocomplete="${auto}" required minlength="8"${meter ? ' data-meter="1"' : ''}><button type="button" class="pw-eye" data-action="pwEye" aria-label="Afficher le mot de passe">${EYE}</button></div></label>`
+    + (meter ? `<div class="pw-meter" data-s="0"><i></i><i></i><i></i><i></i></div><p class="pw-hint">${PW_LABEL[0]}</p>` : '');
+}
+document.addEventListener('input', e => {
+  const inp = e.target;
+  if(inp.dataset && inp.dataset.meter){
+    const box = inp.closest('label'), meter = box.nextElementSibling, hint = meter && meter.nextElementSibling;
+    const sc = inp.value ? pwScore(inp.value) : 0;
+    if(meter) meter.dataset.s = sc;
+    if(hint) hint.textContent = PW_LABEL[sc];
+  }
+  const err = inp.closest && inp.closest('form') && inp.closest('form').querySelector('.form-err');
+  if(err && !err.hidden && inp.tagName === 'INPUT') err.hidden = true;
+});
+function formErr(form, msg){
+  const box = form.querySelector('.form-err');
+  box.textContent = msg; box.hidden = false;
+  box.style.animation = 'none'; void box.offsetWidth; box.style.animation = '';
+  buzz(30);
+}
+function busy(btn, on, label){
+  if(on){ btn.dataset.label = btn.innerHTML; btn.classList.add('busy'); btn.innerHTML = `<span class="spin"></span>${label}`; }
+  else { btn.classList.remove('busy'); if(btn.dataset.label) btn.innerHTML = btn.dataset.label; }
+}
+
+/* ---------- Rendu de l'onglet ---------- */
+function authHTML(){
+  const signup = ACCT.mode === 'signup';
+  return `<header class="vid-banner acct-banner reveal">
+      <span class="bb-glow g1"></span><span class="bb-glow g2"></span>
+      <div class="vb-kicker">Ton compte HealthyRemake</div>
+      <h2 class="vb-title">${signup ? 'Crée ton compte, c\'est gratuit' : 'Content de te revoir 👋'}</h2>
+      <div class="acct-perks">
+        <span><i>💚</i>Tes favoris sur tous tes appareils</span>
+        <span><i>🎯</i>Tes recettes adaptées à ton objectif</span>
+        <span><i>⚙️</i>Tes réglages sauvegardés</span>
+      </div>
+    </header>
+    <div class="card auth-card">
+      <div class="seg" data-mode="${ACCT.mode}" role="tablist">
+        <span class="ind"></span>
+        <button type="button" role="tab" class="${signup ? '' : 'on'}" aria-selected="${!signup}" data-action="authMode" data-mode="login">Se connecter</button>
+        <button type="button" role="tab" class="${signup ? 'on' : ''}" aria-selected="${signup}" data-action="authMode" data-mode="signup">Créer un compte</button>
+      </div>
+      <form id="authForm" novalidate>
+        <div class="auth-fields" id="authFields">${authFieldsHTML()}</div>
+      </form>
+    </div>`;
+}
+function authFieldsHTML(){
+  const signup = ACCT.mode === 'signup';
+  return (signup ? `<label class="ai-field"><span>Prénom <i>· facultatif</i></span><input id="authName" type="text" autocomplete="given-name" maxlength="40" placeholder="Comment on t'appelle ?"></label>` : '')
+    + `<label class="ai-field"><span>Adresse e-mail</span><input id="authEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required placeholder="toi@exemple.fr"></label>`
+    + pwField('authPw', 'Mot de passe', signup ? 'new-password' : 'current-password', signup)
+    + `<p class="form-err" role="alert" hidden></p>`
+    + `<button class="btn btn-primary" type="submit">${signup ? 'Créer mon compte' : 'Se connecter'}</button>`
+    + (signup
+      ? `<p class="auth-legal">En créant un compte, tu acceptes que ton e-mail, tes favoris et tes réglages soient enregistrés sur le serveur de l'app. Ton mot de passe est chiffré et n'est jamais stocké en clair.</p>`
+      : `<div class="auth-alt"><button type="button" class="link-btn" data-action="acctSheet" data-mode="forgot">Mot de passe oublié ?</button></div>`);
+}
+function setAuthMode(mode){
+  if(mode === ACCT.mode) return;
+  const email = $('#authEmail') ? $('#authEmail').value : '';
+  ACCT.mode = mode;
+  const seg = $('#acctTop .seg');
+  seg.dataset.mode = mode;
+  seg.querySelectorAll('button').forEach(b => { const on = b.dataset.mode === mode; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  $('#acctTop .vb-title').textContent = mode === 'signup' ? 'Crée ton compte, c\'est gratuit' : 'Content de te revoir 👋';
+  const f = $('#authFields');
+  f.innerHTML = authFieldsHTML();
+  f.className = 'auth-fields ' + (mode === 'signup' ? 'from-r' : 'from-l');
+  $('#authEmail').value = email;
+}
+function profileHTML(u){
+  const name = u.name || u.email.split('@')[0];
+  const favN = Object.values(state.liked).filter(Boolean).length;
+  const since = u.created ? new Date(u.created).toLocaleDateString('fr-FR', { month:'short', year:'numeric' }) : '';
+  return `<div class="card profile-card">
+      <span class="avatar">${esc(initials(name))}</span>
+      <div class="who"><b>${esc(name)}</b><span>${esc(u.email)}</span><span class="sync-pill" id="syncPill"></span></div>
+    </div>
+    <div class="acct-stats">
+      <div><b>${favN}</b><span>favori${favN > 1 ? 's' : ''}</span></div>
+      <div><b>${LEVELS[PREFS.level].emoji}</b><span>${esc(LEVELS[PREFS.level].short)}</span></div>
+      <div><b class="sm">${esc(since)}</b><span>inscription</span></div>
+    </div>`;
+}
+function updateSyncPill(){
+  const p = $('#syncPill'); if(!p) return;
+  const st = ACCT.sync;
+  p.className = 'sync-pill ' + st;
+  p.textContent = st === 'saving' ? 'Synchronisation…' : st === 'error' ? 'Hors ligne · réessai plus tard' : 'Synchronisé';
+}
+function row(ic, title, sub, right, attrs = '', cls = ''){
+  return `<button type="button" class="set-row ${cls}" ${attrs}><span class="ic">${ic}</span><span class="tx"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span>${right}</button>`;
+}
+function switchRow(ic, title, sub, key, on){
+  return `<label class="set-row"><span class="ic">${ic}</span><span class="tx"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</span><span class="switch"><input type="checkbox" data-pref="${key}" ${on ? 'checked' : ''}><span class="sw"></span></span></label>`;
+}
+function settingsHTML(){
+  const s = ACCT.session;
+  const favN = Object.values(state.liked).filter(Boolean).length;
+  const aiOn = AI.on;
+  const dark = document.documentElement.dataset.theme === 'dark';
+  return `<div class="set-title">Mon objectif</div>
+    <div class="goal-grid" id="goalGrid">${GOALS.map((g, i) => `<button type="button" class="goal ${PREFS.level === i ? 'on' : ''}" data-action="setGoal" data-level="${i}" aria-pressed="${PREFS.level === i}"><span class="e">${LEVELS[i].emoji}</span><b>${g.t}</b><span>${g.d}</span></button>`).join('')}</div>
+    <p class="set-note">Les recettes et les analyses s'ouvrent directement au niveau « ${esc(LEVELS[PREFS.level].label)} ». Tu peux toujours changer de niveau sur chaque recette.</p>
+
+    <div class="set-title">Préférences</div>
+    <div class="set-group">
+      ${switchRow('🌙', 'Mode sombre', 'Plus doux pour les yeux le soir', 'dark', dark)}
+      ${switchRow('🔔', 'Alertes nouvelles vidéos', 'Pastille sur l\'onglet Vidéos', 'vidAlerts', PREFS.vidAlerts)}
+      ${switchRow('📳', 'Vibrations', 'Petit retour au toucher', 'vibrate', PREFS.vibrate)}
+      ${switchRow('🧘', 'Réduire les animations', 'Transitions plus discrètes', 'reduceMotion', PREFS.reduceMotion)}
+    </div>
+
+    <div class="set-title">Mon contenu</div>
+    <div class="set-group">
+      ${row('💚', 'Mes favoris', favN ? `${favN} recette${favN > 1 ? 's' : ''} enregistrée${favN > 1 ? 's' : ''}` : 'Aucune recette pour l\'instant', CHEV, 'data-action="openFavs"')}
+      ${row('🎬', 'Mes créateurs YouTube', `${VID.creators.length} chaîne${VID.creators.length > 1 ? 's' : ''} suivie${VID.creators.length > 1 ? 's' : ''}`, CHEV, 'data-action="vidManage"')}
+      ${row('✦', 'Analyse IA des photos', 'Serveur Cloudflare', `<span class="val ${aiOn ? 'ok' : ''}">${aiOn ? 'Active' : 'Simulée'}</span>${CHEV}`, 'data-action="aiSettings"')}
+    </div>
+
+    ${s ? `<div class="set-title">Mon compte</div>
+    <div class="set-group">
+      ${row('✏️', 'Modifier mon prénom', esc(s.user.name || 'Non renseigné'), CHEV, 'data-action="acctSheet" data-mode="name"')}
+      ${row('🔑', 'Changer le mot de passe', '', CHEV, 'data-action="acctSheet" data-mode="password"')}
+      ${row('👋', 'Se déconnecter', 'Tes données restent sur cet appareil', '', 'data-action="logout"')}
+      ${row('🗑️', 'Supprimer mon compte', 'Définitif', CHEV, 'data-action="acctSheet" data-mode="delete"', 'danger')}
+    </div>` : ''}
+
+    <div class="set-title">Données</div>
+    <div class="set-group">
+      ${row('🤍', 'Vider mes favoris', '', CHEV, 'data-action="acctSheet" data-mode="clearFavs"')}
+      ${row('↺', 'Réinitialiser l\'app', 'Efface les réglages de cet appareil', CHEV, 'data-action="acctSheet" data-mode="reset"', 'danger')}
+    </div>
+    <p class="acct-foot">HealthyRemake AI · Les calories et macros sont des estimations, elles ne remplacent pas l'avis d'un professionnel de santé.</p>`;
+}
+function renderAccount(){
+  const s = ACCT.session;
+  $('#acctTop').innerHTML = s ? profileHTML(s.user) : authHTML();
+  $('#acctSettings').innerHTML = settingsHTML();
+  updateSyncPill();
+}
+function setGoal(i){
+  if(i === PREFS.level) return;
+  PREFS.level = i; savePrefs(); buzz(10);
+  $$('#goalGrid .goal').forEach(g => { const on = +g.dataset.level === i; g.classList.toggle('on', on); g.setAttribute('aria-pressed', on); });
+  const note = $('#goalGrid').nextElementSibling;
+  if(note) note.textContent = `Les recettes et les analyses s'ouvrent directement au niveau « ${LEVELS[i].label} ». Tu peux toujours changer de niveau sur chaque recette.`;
+  if(ACCT.session){ const st = $('#acctTop .acct-stats div:nth-child(2)'); if(st) st.innerHTML = `<b>${LEVELS[i].emoji}</b><span>${esc(LEVELS[i].short)}</span>`; }
+  refreshAfterPrefs();
+  toast(`🎯 Objectif : ${GOALS[i].t.toLowerCase()}`);
+}
+document.addEventListener('change', e => {
+  const k = e.target.dataset && e.target.dataset.pref;
+  if(!k) return;
+  const on = e.target.checked;
+  buzz(8);
+  if(k === 'dark'){ applyTheme(on ? 'dark' : 'light'); localChanged(); return; }
+  PREFS[k] = on; savePrefs();
+  if(k === 'vidAlerts') updateVidBadge();
+});
+
+/* ---------- Connexion / inscription ---------- */
+document.addEventListener('submit', async e => {
+  const form = e.target;
+  if(form.id === 'authForm'){ e.preventDefault(); doAuth(form); }
+  else if(form.id === 'acctForm'){ e.preventDefault(); doAcctForm(form); }
+});
+async function doAuth(form){
+  const signup = ACCT.mode === 'signup';
+  const email = $('#authEmail').value.trim().toLowerCase(), pw = $('#authPw').value;
+  const name = signup ? $('#authName').value.trim() : '';
+  if(!emailOk(email)) return formErr(form, 'Saisis une adresse e-mail valide, par exemple toi@exemple.fr.');
+  if(!pw) return formErr(form, 'Saisis ton mot de passe.');
+  if(signup){ const p = pwProblem(pw); if(p) return formErr(form, p); }
+  const btn = form.querySelector('button[type=submit]');
+  busy(btn, true, signup ? 'Création du compte…' : 'Connexion…');
+  try{
+    const j = await api('POST', signup ? '/auth/signup' : '/auth/login', { email, password: pw, name });
+    ACCT.session = { token: j.token, user: j.user }; saveSession();
+    if(j.data) adoptRemote(j.data, true);
+    await pushData();
+    renderAccount();
+    $('#s-account').scrollTo({ top:0, behavior:'smooth' });
+    buzz(20);
+    const first = (j.user.name || '').split(' ')[0];
+    toast(signup ? `🎉 Bienvenue${first ? ' ' + first : ''} !` : `👋 Content de te revoir${first ? ' ' + first : ''} !`);
+  }catch(err){
+    busy(btn, false);
+    formErr(form, err.code === 'exists' ? 'Un compte existe déjà avec cette adresse. Connecte-toi plutôt.' : err.code === 'invalid' ? 'E-mail ou mot de passe incorrect.' : err.message);
+  }
+}
+async function logout(){
+  const s = ACCT.session; if(!s) return;
+  clearTimeout(ACCT.syncTimer);
+  api('POST', '/auth/logout').catch(() => {});
+  ACCT.session = null; ACCT.mode = 'login'; saveSession();
+  renderAccount();
+  $('#s-account').scrollTo({ top:0, behavior:'smooth' });
+  toast('👋 À bientôt !');
+}
+
+/* ---------- Feuilles : prénom, mot de passe, suppression… ---------- */
+function openAcctSheet(mode){
+  const s = ACCT.session, body = $('#acctSheetBody');
+  const form = (inner) => `<form id="acctForm" data-mode="${mode}" novalidate>${inner}<p class="form-err" role="alert" hidden></p>`;
+  const close = `<button class="btn btn-ghost" type="button" data-action="closeSheet">Annuler</button>`;
+  const H = {
+    forgot: `<h4>Mot de passe oublié ?</h4>
+      <p>La réinitialisation par e-mail n'est pas encore disponible dans l'app.</p>
+      <div class="acct-sheet-body"><p class="set-note" style="margin:0 0 16px">• Si tu es encore connecté sur un autre appareil, va dans <b>Compte → Changer le mot de passe</b>.<br>• Sinon, tu peux créer un nouveau compte : tes favoris enregistrés sur cet appareil y seront ajoutés.</p></div>
+      <button class="btn btn-primary" type="button" data-action="closeSheet">J'ai compris</button>`,
+    name: form(`<h4>Modifier mon prénom</h4><p>Il s'affiche sur ton profil.</p>
+      <label class="ai-field"><span>Prénom</span><input id="fName" type="text" autocomplete="given-name" maxlength="40" value="${esc((s && s.user.name) || '')}"></label>`)
+      + `<button class="btn btn-primary" type="submit">Enregistrer</button>${close}</form>`,
+    password: form(`<h4>Changer le mot de passe</h4><p>Choisis un mot de passe que tu n'utilises nulle part ailleurs.</p>
+      ${pwField('fCur', 'Mot de passe actuel', 'current-password', false)}
+      ${pwField('fNew', 'Nouveau mot de passe', 'new-password', true)}
+      ${pwField('fNew2', 'Confirme le nouveau mot de passe', 'new-password', false)}`)
+      + `<button class="btn btn-primary" type="submit">Changer le mot de passe</button>${close}</form>`,
+    delete: form(`<h4>Supprimer mon compte</h4>
+      <div class="warn">Ton compte, tes favoris et tes réglages synchronisés seront supprimés du serveur. C'est définitif.</div>
+      ${pwField('fPw', 'Confirme avec ton mot de passe', 'current-password', false)}`)
+      + `<button class="btn btn-danger" type="submit">Supprimer définitivement</button>${close}</form>`,
+    clearFavs: `<h4>Vider mes favoris ?</h4><p>Toutes tes recettes favorites seront retirées${s ? ', sur tous tes appareils' : ''}.</p>
+      <button class="btn btn-danger" type="button" data-action="acctConfirm" data-mode="clearFavs">Vider mes favoris</button>${close}`,
+    reset: `<h4>Réinitialiser l'app ?</h4><p>Les favoris, réglages, créateurs suivis et la session de cet appareil seront effacés. ${s ? 'Ton compte reste intact sur le serveur : il suffira de te reconnecter.' : ''}</p>
+      <button class="btn btn-danger" type="button" data-action="acctConfirm" data-mode="reset">Tout réinitialiser</button>${close}`
+  };
+  if(!H[mode]) return;
+  body.innerHTML = H[mode];
+  openPanel('acctSheet');
+  const first = body.querySelector('input');
+  if(first && matchMedia('(hover:hover)').matches) setTimeout(() => first.focus(), 350);
+}
+async function doAcctForm(form){
+  const mode = form.dataset.mode, btn = form.querySelector('button[type=submit]');
+  try{
+    if(mode === 'name'){
+      busy(btn, true, 'Enregistrement…');
+      const j = await api('PUT', '/auth/profile', { name: $('#fName').value.trim() });
+      ACCT.session.user = j.user; saveSession();
+      closeSheet(); renderAccount(); toast('✓ Prénom mis à jour');
+    }
+    if(mode === 'password'){
+      const cur = $('#fCur').value, nw = $('#fNew').value, nw2 = $('#fNew2').value;
+      if(!cur) return formErr(form, 'Saisis ton mot de passe actuel.');
+      const p = pwProblem(nw); if(p) return formErr(form, p);
+      if(nw !== nw2) return formErr(form, 'Les deux nouveaux mots de passe ne correspondent pas.');
+      if(nw === cur) return formErr(form, 'Le nouveau mot de passe doit être différent de l\'actuel.');
+      busy(btn, true, 'Modification…');
+      await api('POST', '/auth/password', { current: cur, password: nw });
+      closeSheet(); toast('🔑 Mot de passe modifié');
+    }
+    if(mode === 'delete'){
+      const pw = $('#fPw').value;
+      if(!pw) return formErr(form, 'Saisis ton mot de passe pour confirmer.');
+      busy(btn, true, 'Suppression…');
+      await api('DELETE', '/auth/account', { password: pw });
+      ACCT.session = null; ACCT.mode = 'login'; saveSession();
+      closeSheet(); renderAccount(); $('#s-account').scrollTo({ top:0 });
+      toast('Ton compte a été supprimé');
+    }
+  }catch(err){
+    busy(btn, false);
+    formErr(form, err.code === 'invalid' ? (mode === 'password' ? 'Mot de passe actuel incorrect.' : 'Mot de passe incorrect.') : err.message);
+  }
+}
+function acctConfirm(mode){
+  if(mode === 'clearFavs'){
+    state.liked = {}; saveFavs(); closeSheet(); renderAccount();
+    if(state.screen === 's-library') renderLibList();
+    toast('Favoris vidés');
+  }
+  if(mode === 'reset'){
+    try{ localStorage.clear(); }catch(_){}
+    location.reload();
+  }
+}
+
 document.addEventListener('click', e => {
   const ing = e.target.closest('.ing');
   if(ing){ ing.classList.toggle('checked'); ing.setAttribute('aria-checked', ing.classList.contains('checked')); return; }
@@ -5755,13 +6283,13 @@ document.addEventListener('click', e => {
       break;
     case 'analyze':
       if(!state.photo) { toast('Importe d\'abord une photo'); return; }
-      state.level = 1; state.source = 'scan'; state.ai = null; state.aiNote = null;
+      state.level = PREFS.level; state.source = 'scan'; state.ai = null; state.aiNote = null;
       if(state.hint === 'auto' && AI.on){ startAnalysis(runAI()); break; }
       state.dish = state.hint !== 'auto' ? state.hint : (detectDish(state.fileName) || 'burger');
       startAnalysis();
       break;
     case 'example':
-      state.dish = el.dataset.dish; state.level = 1; state.source = 'scan';
+      state.dish = el.dataset.dish; state.level = PREFS.level; state.source = 'scan';
       state.photo = null; state.fileName = null;
       startAnalysis();
       break;
@@ -5844,7 +6372,15 @@ document.addEventListener('click', e => {
       } else closeSheet();
       break;
     case 'relaunch': relaunch(); break;
-    case 'theme': toggleTheme(el); break;
+    case 'theme': toggleTheme(el); localChanged(); break;
+    case 'navAccount': state.history = []; go('s-account', {push:false}); break;
+    case 'authMode': setAuthMode(el.dataset.mode); break;
+    case 'pwEye': { const inp = el.parentNode.querySelector('input'); const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; el.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'); el.innerHTML = show ? EYE_OFF : EYE; break; }
+    case 'setGoal': setGoal(+el.dataset.level); break;
+    case 'acctSheet': openAcctSheet(el.dataset.mode); break;
+    case 'logout': logout(); break;
+    case 'acctConfirm': acctConfirm(el.dataset.mode); break;
+    case 'openFavs': state.libCat = 'fav'; renderLibChips(); state.history = []; go('s-library', {push:false}); break;
     case 'about': toast('✦ Démo : l\'IA est simulée avec des données fictives'); break;
   }
 });
@@ -6033,7 +6569,7 @@ function capture(){
   ctx.drawImage(camVideo, 0, 0, c.width, c.height);
   cam.shot = c.toDataURL('image/jpeg', .88);
   const f = $('#camFlash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-  if(navigator.vibrate) navigator.vibrate(25);
+  buzz(25);
   clearInterval(cam.timer);
   camVideo.pause();
   $('#camShot').src = cam.shot;

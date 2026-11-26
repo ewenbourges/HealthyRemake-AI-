@@ -13,6 +13,8 @@
      (si tu le crées, l'app devra envoyer ce code pour analyser)
    - Variable MODEL ......................................... facultatif
      (pour forcer un autre modèle Workers AI qui accepte les images)
+   - Binding « KV namespace » nommé USERS ................... pour les comptes
+     (connexion e-mail + mot de passe, favoris et réglages synchronisés)
    ===================================================================== */
 
 // Adresses autorisées à appeler le serveur depuis un navigateur.
@@ -60,8 +62,8 @@ export default {
     const allowed = !origin || ALLOWED_ORIGINS.some(o => origin === o || origin.startsWith(o + ':'));
     const cors = {
       'Access-Control-Allow-Origin': origin && allowed ? origin : ALLOWED_ORIGINS[0],
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Access-Code',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Access-Code, Authorization',
       'Access-Control-Max-Age': '86400',
       'Vary': 'Origin'
     };
@@ -72,13 +74,17 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     if (!allowed) return reply({ ok: false, error: 'origin', detail: "Cette adresse n'est pas autorisée (ALLOWED_ORIGINS)." }, 403);
 
+    // Comptes : /auth/...
+    const path = new URL(request.url).pathname.replace(/\/+$/, '');
+    if (path.startsWith('/auth')) return handleAuth(request, env, path, reply);
+
     const ready = !!(env && env.AI);
     const codeOk = !env.ACCESS_CODE || request.headers.get('X-Access-Code') === env.ACCESS_CODE;
 
     // Test de connexion depuis l'app
     if (request.method === 'GET') {
       return reply({ ok: ready, service: 'healthyremake-ai', ready, protected: !!env.ACCESS_CODE, code_ok: codeOk,
-        models: MODELS.map(m => m.name), error: ready ? undefined : 'binding' });
+        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), error: ready ? undefined : 'binding' });
     }
     if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
     if (!ready) return reply({ ok: false, error: 'binding', detail: "Ajoute le binding Workers AI nommé AI dans les réglages du Worker." }, 500);
@@ -177,4 +183,155 @@ function clean(d, keys) {
     }
   }
   return out;
+}
+
+/* =====================================================================
+   Comptes utilisateurs (e-mail + mot de passe)
+   ---------------------------------------------------------------------
+   Stockage : Cloudflare KV (binding USERS).
+   - user:<email>   → profil, sel et empreinte du mot de passe, données synchronisées
+   - sess:<jeton>   → e-mail du compte (expire tout seul au bout de 30 jours)
+   - rl:<clé>       → compteur anti-force brute (expire au bout de 15 minutes)
+   Les mots de passe ne sont jamais stockés : seulement une empreinte
+   PBKDF2-SHA256 (100 000 itérations) avec un sel aléatoire par compte.
+   ===================================================================== */
+const SESSION_TTL = 60 * 60 * 24 * 30;   // 30 jours
+const PBKDF2_ITER = 100000;               // maximum accepté par les Workers
+const MAX_ATTEMPTS = 8;                   // essais ratés autorisés par 15 minutes
+const MAX_DATA_CHARS = 60000;             // favoris + réglages synchronisés
+
+async function handleAuth(request, env, path, reply) {
+  const kv = env && env.USERS;
+  if (!kv) return reply({ ok: false, error: 'accounts_off', detail: 'Ajoute le binding KV nommé USERS dans les réglages du Worker.' }, 503);
+  const route = request.method + ' ' + path;
+  let body = {};
+  if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') {
+    try { body = await request.json(); } catch { body = {}; }
+    if (!body || typeof body !== 'object') body = {};
+  }
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+
+  try {
+    if (route === 'POST /auth/signup') {
+      const email = normEmail(body.email), password = String(body.password || ''), name = cleanName(body.name);
+      if (!email) return reply({ ok: false, error: 'email', detail: 'Adresse e-mail invalide.' }, 400);
+      const pwErr = checkPassword(password);
+      if (pwErr) return reply({ ok: false, error: 'password', detail: pwErr }, 400);
+      if (await limited(kv, 'signup:' + ip, 10)) return reply({ ok: false, error: 'rate', detail: 'Trop de tentatives. Réessaie dans quelques minutes.' }, 429);
+      await hit(kv, 'signup:' + ip);
+      if (await kv.get('user:' + email)) return reply({ ok: false, error: 'exists', detail: 'Un compte existe déjà avec cette adresse.' }, 409);
+      const salt = randomHex(16);
+      const user = { id: randomHex(12), email, name, salt, hash: await hashPassword(password, salt), created: Date.now(), data: null };
+      await kv.put('user:' + email, JSON.stringify(user));
+      const token = await newSession(kv, email);
+      return reply({ ok: true, token, user: publicUser(user) });
+    }
+
+    if (route === 'POST /auth/login') {
+      const email = normEmail(body.email), password = String(body.password || '');
+      if (!email || !password) return reply({ ok: false, error: 'invalid', detail: 'E-mail ou mot de passe incorrect.' }, 401);
+      if (await limited(kv, 'login:' + email, MAX_ATTEMPTS) || await limited(kv, 'ip:' + ip, MAX_ATTEMPTS * 4))
+        return reply({ ok: false, error: 'rate', detail: 'Trop de tentatives. Réessaie dans 15 minutes.' }, 429);
+      const user = await getUser(kv, email);
+      const ok = user ? safeEqual(await hashPassword(password, user.salt), user.hash) : (await hashPassword(password, 'x'), false);
+      if (!ok) {
+        await hit(kv, 'login:' + email); await hit(kv, 'ip:' + ip);
+        return reply({ ok: false, error: 'invalid', detail: 'E-mail ou mot de passe incorrect.' }, 401);
+      }
+      const token = await newSession(kv, email);
+      return reply({ ok: true, token, user: publicUser(user), data: user.data || null });
+    }
+
+    // Routes qui demandent d'être connecté
+    const token = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+    const email = /^[a-f0-9]{64}$/.test(token) ? await kv.get('sess:' + token) : null;
+    const user = email ? await getUser(kv, email) : null;
+    if (!user) return reply({ ok: false, error: 'session', detail: 'Session expirée, reconnecte-toi.' }, 401);
+
+    if (route === 'GET /auth/me') return reply({ ok: true, user: publicUser(user), data: user.data || null });
+
+    if (route === 'PUT /auth/data') {
+      const data = body.data && typeof body.data === 'object' ? body.data : null;
+      const raw = JSON.stringify(data);
+      if (!data || raw.length > MAX_DATA_CHARS) return reply({ ok: false, error: 'data', detail: 'Données invalides ou trop lourdes.' }, 400);
+      user.data = { ...data, savedAt: Date.now() };
+      await kv.put('user:' + user.email, JSON.stringify(user));
+      return reply({ ok: true, savedAt: user.data.savedAt });
+    }
+
+    if (route === 'PUT /auth/profile') {
+      user.name = cleanName(body.name);
+      await kv.put('user:' + user.email, JSON.stringify(user));
+      return reply({ ok: true, user: publicUser(user) });
+    }
+
+    if (route === 'POST /auth/password') {
+      if (await limited(kv, 'login:' + user.email, MAX_ATTEMPTS)) return reply({ ok: false, error: 'rate', detail: 'Trop de tentatives. Réessaie dans 15 minutes.' }, 429);
+      if (!safeEqual(await hashPassword(String(body.current || ''), user.salt), user.hash)) {
+        await hit(kv, 'login:' + user.email);
+        return reply({ ok: false, error: 'invalid', detail: 'Mot de passe actuel incorrect.' }, 401);
+      }
+      const pwErr = checkPassword(String(body.password || ''));
+      if (pwErr) return reply({ ok: false, error: 'password', detail: pwErr }, 400);
+      user.salt = randomHex(16);
+      user.hash = await hashPassword(String(body.password), user.salt);
+      await kv.put('user:' + user.email, JSON.stringify(user));
+      return reply({ ok: true });
+    }
+
+    if (route === 'POST /auth/logout') { await kv.delete('sess:' + token); return reply({ ok: true }); }
+
+    if (route === 'DELETE /auth/account') {
+      if (!safeEqual(await hashPassword(String(body.password || ''), user.salt), user.hash)) {
+        await hit(kv, 'login:' + user.email);
+        return reply({ ok: false, error: 'invalid', detail: 'Mot de passe incorrect.' }, 401);
+      }
+      await kv.delete('user:' + user.email);
+      await kv.delete('sess:' + token);
+      return reply({ ok: true });
+    }
+
+    return reply({ ok: false, error: 'route' }, 404);
+  } catch (e) {
+    const detail = String((e && e.message) || e).slice(0, 200);
+    const quota = /limit|quota|exceed|429/i.test(detail);
+    return reply({ ok: false, error: quota ? 'quota' : 'server', detail: quota ? 'Limite gratuite du jour atteinte, réessaie demain.' : detail }, quota ? 429 : 500);
+  }
+}
+
+function normEmail(v) {
+  const e = String(v || '').trim().toLowerCase();
+  return e.length <= 120 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) ? e : '';
+}
+function cleanName(v) { return String(v || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40); }
+function checkPassword(p) {
+  if (p.length < 8) return 'Le mot de passe doit faire au moins 8 caractères.';
+  if (p.length > 200) return 'Mot de passe trop long.';
+  if (!/[A-Za-z]/.test(p) || !/[0-9]/.test(p)) return 'Le mot de passe doit contenir au moins une lettre et un chiffre.';
+  return '';
+}
+function publicUser(u) { return { email: u.email, name: u.name || '', created: u.created }; }
+async function getUser(kv, email) { const raw = await kv.get('user:' + email); return raw ? JSON.parse(raw) : null; }
+async function newSession(kv, email) {
+  const token = randomHex(32);
+  await kv.put('sess:' + token, email, { expirationTtl: SESSION_TTL });
+  return token;
+}
+function randomHex(bytes) { const a = new Uint8Array(bytes); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); }
+async function hashPassword(password, saltHex) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const salt = enc.encode(saltHex);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PBKDF2_ITER }, key, 256);
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+async function limited(kv, key, max) { return (+(await kv.get('rl:' + key)) || 0) >= max; }
+async function hit(kv, key) {
+  const n = (+(await kv.get('rl:' + key)) || 0) + 1;
+  await kv.put('rl:' + key, String(n), { expirationTtl: 900 });
 }

@@ -8,6 +8,7 @@ Application web mobile-first : scanne ou importe la photo d'un plat, et l'app pr
 - Scan avec l'appareil photo du téléphone
 - **Vraie reconnaissance des plats par IA** (facultatif, gratuit) : voir [serveur-ia/README.md](serveur-ia/README.md)
 - Onglet vidéos avec les dernières recettes healthy des créateurs YouTube
+- Onglet Compte : connexion par e-mail et mot de passe, favoris, objectif et réglages synchronisés (voir [serveur-ia/README.md](serveur-ia/README.md), section 8)
 - Thème clair / sombre
 
 Tout tient dans un seul fichier `index.html` (HTML, CSS et JavaScript), sans serveur ni base de données. Sans serveur IA, l'analyse est simulée ; avec le serveur gratuit Cloudflare Workers AI (dossier `serveur-ia`), l'app reconnaît vraiment le plat photographié. Les valeurs nutritionnelles restent des estimations.
