@@ -105,6 +105,22 @@ img{display:block;max-width:100%}
 .side-feat .ic{width:40px;height:40px;border-radius:12px;background:var(--pastel);display:grid;place-items:center;font-size:20px;flex:none}
 .side-feat b{display:block;font-size:15px}
 .side-feat span{font-size:13px;color:var(--muted)}
+/* Écrans d'ordinateur peu hauts : la colonne de gauche ne doit pas dépasser la hauteur de la fenêtre */
+@media (min-width:1024px) and (max-height:920px){
+  .side{gap:18px}
+  .side h2{font-size:42px}
+  .side p{font-size:16px}
+  .side-feats{gap:8px}
+  .side-feat{padding:10px 14px}
+  .side-feat .ic{width:36px;height:36px;font-size:18px}
+}
+@media (min-width:1024px) and (max-height:780px){
+  .stage{padding:24px 40px}
+  .app{height:calc(100vh - 48px)}
+  .side h2{font-size:36px}
+  .side-feat:nth-child(n+4){display:none}
+}
+@media (min-width:1024px) and (max-height:640px){ .side-feats{display:none} }
 
 /* ---------- Screens ---------- */
 .screens{position:relative;flex:1;overflow:hidden}
@@ -119,6 +135,11 @@ img{display:block;max-width:100%}
 .screen.leaving-back.active{animation:screenInBack .5s var(--ease) both}
 @keyframes screenIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes screenInBack{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+.screen.active{z-index:1}
+.screen.out{display:flex;z-index:0;pointer-events:none;animation:screenOut .34s var(--ease) both}
+.screen.out.out-back{animation-name:screenOutBack}
+@keyframes screenOut{to{opacity:0;transform:translateX(-22px) scale(.985)}}
+@keyframes screenOutBack{to{opacity:0;transform:translateX(22px) scale(.985)}}
 
 .topbar{
   position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
@@ -307,7 +328,7 @@ h1.display em{font-style:italic;color:var(--emerald)}
 .result-hero{position:relative;margin:0 -22px;height:300px}
 .result-hero .ph{position:absolute;inset:0}
 .result-hero .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),transparent 30%,transparent 55%,var(--bg) 98%)}
-.result-hero .topbar{position:absolute;left:0;right:0;top:0;background:none}
+.result-hero .topbar{position:absolute;left:0;right:0;top:0;margin:0;background:none}
 .result-hero .icon-btn{background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-color:transparent}
 .hero-tag{position:absolute;left:22px;bottom:58px;display:flex;gap:8px;flex-wrap:wrap}
 .hero-tag span{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
@@ -373,13 +394,17 @@ input[type=range]::-moz-range-track{background:transparent}
 
 /* Tabs */
 .tabs{position:sticky;top:0;z-index:15;display:grid;grid-template-columns:1fr 1fr;background:var(--bg-2);border-radius:16px;padding:5px;margin:24px 0 18px;box-shadow:0 8px 16px -10px rgba(22,37,30,.15)}
-.tabs button{position:relative;z-index:1;padding:11px;border-radius:12px;font-weight:700;font-size:14px;color:var(--muted);transition:color .25s}
+.tabs button{position:relative;z-index:1;padding:11px 6px;white-space:nowrap;border-radius:12px;font-weight:700;font-size:14px;color:var(--muted);transition:color .25s}
 .tabs button.on{color:var(--ink)}
 .tabs .ind{position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm);transition:transform .35s var(--ease)}
 .tabs[data-tab="compare"] .ind{transform:translateX(100%)}
 .panel{display:none;animation:panelIn .4s var(--ease)}
 .panel.on{display:block}
 @keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel.on.from-r{animation:panelInR .45s var(--ease)}
+.panel.on.from-l{animation:panelInL .45s var(--ease)}
+@keyframes panelInR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes panelInL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
 
 .info-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .info-row span{flex:1;min-width:90px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;font-size:12px;color:var(--muted);font-weight:600}
@@ -603,6 +628,11 @@ body.booting .side{opacity:0;transform:translateY(14px)}
 .nav-it{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:700;color:var(--muted);padding:6px;border-radius:14px;transition:color .2s}
 .nav-it svg{width:22px;height:22px}
 .nav-it.on{color:var(--emerald-d)}
+.nav-it.on svg{animation:navPop .45s var(--ease)}
+@keyframes navPop{40%{transform:translateY(-3px) scale(1.14)}}
+.nav-pill{position:absolute;top:8px;bottom:8px;left:0;width:0;border-radius:16px;background:var(--pastel-2);opacity:0;pointer-events:none;
+  transition:transform .42s var(--ease), width .42s var(--ease), opacity .25s}
+.nav-pill.on{opacity:1}
 .nav-scan{width:60px;height:60px;border-radius:21px;margin:-30px 6px 0;background:linear-gradient(140deg,#14B981,#087A54);display:grid;place-items:center;box-shadow:0 14px 26px -10px rgba(14,159,110,.9), 0 0 0 6px var(--bg);transition:transform .2s var(--ease)}
 .nav-scan:hover{transform:translateY(-2px)}
 .nav-scan:active{transform:scale(.92)}
@@ -629,7 +659,7 @@ body.booting .side{opacity:0;transform:translateY(14px)}
 .creator .nm{max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .creator.all .av{background:var(--ink);color:var(--bg);font-size:20px}
 .creator.add .av{background:var(--card);color:var(--emerald-d);border:2px dashed var(--mint);box-shadow:none;font-size:26px;font-weight:600}
-.vid-list{display:grid;gap:14px}
+.vid-list{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .vcard{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .25s var(--ease), box-shadow .25s;animation:reveal .5s var(--ease) both}
 .vcard:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .vcover{position:relative;aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden}
@@ -960,6 +990,11 @@ h1.display em,.side h2 em{font-weight:900}
 @media (max-width:370px){
   h1.display{font-size:31px}
   .macro .val{font-size:24px}
+  .macro:not(.kcal) .chg{top:42px}
+  .macro.kcal{gap:12px}
+  .macro.kcal .val{font-size:32px}
+  .macro.kcal .chg{text-align:center;line-height:1.3}
+  .tabs button{font-size:13px}
   .range-labels button{font-size:10.5px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -1355,6 +1390,7 @@ Splash.boot();
 
     <!-- Bottom nav -->
     <nav class="bottom-nav show" id="bottomNav" aria-label="Navigation principale">
+      <span class="nav-pill" id="navPill" aria-hidden="true"></span>
       <button class="nav-it on" data-action="navHome" data-nav="s-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></svg><span>Accueil</span></button>
       <button class="nav-it" data-action="navLibrary" data-nav="s-library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M8 7h7M8 11h5"/></svg><span>Recettes</span></button>
       <button class="nav-scan" data-action="scan" aria-label="Scanner un plat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/></svg></button>
@@ -4511,14 +4547,23 @@ const $$ = s => [...document.querySelectorAll(s)];
 
 function setImg(img, src){ img.style.display=''; img.parentNode.classList.remove('img-fallback'); img.onerror=()=>imgFail(img); img.src=src; }
 
+const TAB_ORDER = ['s-home','s-library','s-videos'];
 function go(id, {back=false, push=true}={}){
   if(id === state.screen) return;
   if(state.screen === 's-camera') stopCamera();
   if(state.screen === 's-loading') state.loadToken++;   // quitter le chargement annule l'analyse en cours
   if(push && !back) state.history.push(state.screen);
+  const ti = TAB_ORDER.indexOf(id), ci = TAB_ORDER.indexOf(state.screen);
+  if(ti >= 0 && ci >= 0) back = ti < ci;   // onglets du bas : glisse dans le sens de la navigation
   updateNav(id);
   const cur = $('#'+state.screen), nxt = $('#'+id);
+  $$('.screen.out').forEach(s => s.classList.remove('out','out-back'));
   cur.classList.remove('active','leaving-back');
+  cur.classList.toggle('out-back', back);
+  cur.classList.add('out');
+  clearTimeout(cur._outT);
+  cur._outT = setTimeout(() => cur.classList.remove('out','out-back'), 400);
+  nxt.classList.remove('out','out-back');
   nxt.classList.toggle('leaving-back', back);
   nxt.classList.add('active');
   nxt.scrollTop = 0;
@@ -4583,7 +4628,22 @@ function updateNav(id){
 function refreshNavOn(id = state.screen){
   const fav = id === 's-library' && state.libCat === 'fav';
   $$('#bottomNav .nav-it').forEach(b => b.classList.toggle('on', fav ? b.dataset.nav === 'fav' : b.dataset.nav === id));
+  moveNavPill();
 }
+function moveNavPill(){
+  const pill = $('#navPill'), on = $('#bottomNav .nav-it.on');
+  if(!pill) return;
+  if(!on){ pill.classList.remove('on'); return; }
+  const first = !pill.classList.contains('on') || !pill.style.width;
+  if(first) pill.style.transition = 'none';
+  pill.style.width = on.offsetWidth + 'px';
+  pill.style.transform = `translateX(${on.offsetLeft}px)`;
+  pill.classList.add('on');
+  if(first){ void pill.offsetWidth; pill.style.transition = ''; }
+}
+addEventListener('resize', () => moveNavPill());
+addEventListener('load', () => moveNavPill());
+requestAnimationFrame(() => moveNavPill());
 function openLibrary(){
   renderLibChips();
   state.history = [];
@@ -5140,8 +5200,9 @@ function setTab(t){
   state.tab = t;
   $('#tabs').dataset.tab = t;
   $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===t));
-  $('#p-recipe').classList.toggle('on', t==='recipe');
-  $('#p-compare').classList.toggle('on', t==='compare');
+  const pr = $('#p-recipe'), pc = $('#p-compare');
+  pr.classList.toggle('on', t==='recipe'); pc.classList.toggle('on', t==='compare');
+  pr.classList.toggle('from-l', t==='recipe'); pc.classList.toggle('from-r', t==='compare');
   if(t==='compare'){
     $$('#p-compare .tr span').forEach(s=>s.style.width='0');
     requestAnimationFrame(()=>requestAnimationFrame(()=>$$('#p-compare .tr span').forEach(s=>s.style.width=s.dataset.w+'%')));
