@@ -1675,6 +1675,8 @@ html[data-theme="dark"] .fake-notif{background:rgba(30,40,35,.94)}
 .toast{white-space:normal;max-width:calc(100% - 32px);width:max-content;text-align:center;justify-content:center}
 .app[data-screen="s-coach"] .toast{bottom:auto;top:76px;transform:translate(-50%,-20px)}
 .app[data-screen="s-coach"] .toast.show{transform:translate(-50%,0)}
+
+a.btn{text-decoration:none;display:flex}
 /* /PLUS:CSS */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -7107,7 +7109,7 @@ function acctConfirm(mode){
    Toutes les données restent sur l'appareil et sont synchronisées
    avec le compte quand on est connecté.
    ===================================================================== */
-const APP_VERSION = '2026.11.26-9';
+const APP_VERSION = '2026.11.26-10';
 const PLUS_DEFAULT = () => ({ profile:null, diet:{ type:'none', excl:[] }, journal:{}, shop:[], plan:{}, mine:[], reviews:{}, stats:{ scans:0, cooked:0, shares:0 }, badges:{} });
 var PLUS = PLUS_DEFAULT();
 try{ Object.assign(PLUS, JSON.parse(localStorage.getItem('hr-plus') || '{}') || {}); }catch(_){}
@@ -8590,7 +8592,8 @@ const PLUS_ACTIONS = {
   cookMic: () => voiceToggle(),
   openCoach: () => coachOpen(), coachSay: el => coachSay(el.dataset.q), coachMic: () => coachMic(),
   coachConvo: () => CV.convo ? stopConvo() : startConvo(),
-  micRetry: () => { closeSheet(); setTimeout(() => state.screen === 's-coach' ? coachMic() : null, 300); },
+  micRetry: () => { REC.ready = null; closeSheet(); setTimeout(() => state.screen === 's-coach' ? coachMic() : null, 300); },
+  copyWorker: () => copyWorkerCode(),
   micKeyboard: () => { closeSheet(); if(state.screen !== 's-coach') coachOpen(); setTimeout(() => $('#coachInput').focus(), 400); },
   openWrapped: () => wrappedOpen(), wrClose: () => wrClose(), wrNext: () => WR.i < WR.slides.length - 1 ? wrShow(WR.i + 1) : wrClose(), wrPrev: () => wrShow(WR.i - 1),
   wrShare: () => wrShare(), wrAgain: () => wrShow(0),
@@ -9085,9 +9088,10 @@ function voiceHandle(raw){
 function voiceOn(){
   VOICE.on = true; $('#cookMic').classList.add('on');
   unlockSpeech();
-  if(!SR || iosInstalled()){
-    toast(iosInstalled() ? '🔊 Lecture à voix haute activée · pour la commande vocale, ouvre l\'app dans Safari' : '🔊 Lecture à voix haute activée (commande vocale indisponible sur ce navigateur)');
-    voiceBubble('Lecture à voix haute activée'); readStep(); return;
+  if(!useNativeSR()){
+    // App installée : une commande par toucher du micro, transcrite par le serveur
+    voiceBubble('Touche 🎙️ puis dis « suivant », « répète », « minuteur »…');
+    readStep(); return;
   }
   try{
     const rec = VOICE.rec = new SR();
@@ -9112,7 +9116,17 @@ function voiceOff(){
   const b = $('#cookMic'); if(b) b.classList.remove('on');
   voiceBubble('');
 }
-function voiceToggle(){ VOICE.on ? (voiceOff(), speechSynthesis && speechSynthesis.cancel()) : voiceOn(); }
+function voiceToggle(){
+  if(!useNativeSR() && VOICE.on){ cookListenOnce(); return; }
+  VOICE.on ? (voiceOff(), speechSynthesis && speechSynthesis.cancel()) : voiceOn();
+}
+async function cookListenOnce(){
+  try{ speechSynthesis.cancel(); }catch(_){}
+  const text = await listenOnce(st => { voiceBubble(st === 'listen' ? 'Je t\'écoute…' : st === 'work' ? 'Je réfléchis…' : 'Touche 🎙️ pour une autre commande'); });
+  if(text === null){ voiceOff(); return; }
+  if(!text){ voiceBubble('Rien entendu · touche 🎙️ et parle juste après'); return; }
+  voiceHandle(text);
+}
 
 /* ---------- Coach IA ---------- */
 const COACH = { msgs:[], busy:false };
@@ -9469,6 +9483,7 @@ function micHelp(kind){
     : IS_ANDROID
     ? ['Touche le <b>cadenas 🔒</b> à gauche de l\'adresse.', 'Ouvre <b>Autorisations</b> › <b>Micro</b> › <b>Autoriser</b>.', 'Vérifie aussi <b>Paramètres › Applications › Chrome › Autorisations › Micro</b>.', 'Reviens ici et touche <b>Réessayer</b>.']
     : ['Clique sur le <b>cadenas 🔒</b> (ou l\'icône réglages) à gauche de l\'adresse.', 'Mets <b>Micro</b> sur <b>Autoriser</b>, puis recharge la page.', 'Vérifie aussi que ton ordinateur autorise le navigateur à utiliser le micro.'];
+  if(kind === 'server') return serverVoiceHelp();
   const title = kind === 'unsupported' ? 'Micro indisponible ici' : kind === 'installed' ? 'Ouvre l\'app dans Safari' : kind === 'dictation' ? 'Active la dictée' : 'Autorise le micro';
   openPlus(`<h4>🎙️ ${title}</h4><p>Pour discuter avec le coach à la voix :</p>
     <div class="steps-ins">${steps.map((s, i) => `<p><b>${i + 1}.</b> ${s}</p>`).join('')}</div>
@@ -9482,15 +9497,14 @@ function coachVoiceUI(){
   if(mic) mic.classList.toggle('on', CV.listening);
   if(tog){ tog.classList.toggle('on', CV.convo); tog.setAttribute('aria-pressed', CV.convo); }
   if(!bar) return;
-  const txt = CV.listening ? 'Je t\'écoute… parle maintenant' : CV.speaking ? 'Le coach te répond…' : CV.convo ? 'Touche 🎙️ pour parler' : '';
+  const txt = CV.listening ? (useNativeSR() ? 'Je t\'écoute… parle maintenant' : 'Je t\'écoute… (touche 🎙️ quand tu as fini)') : CV.working ? 'Je réfléchis à ce que tu as dit…' : CV.speaking ? 'Le coach te répond…' : CV.convo ? 'Touche 🎙️ pour parler' : '';
   bar.hidden = !txt;
-  bar.className = 'coach-voice ' + (CV.listening ? 'listen' : CV.speaking ? 'speak' : '');
+  bar.className = 'coach-voice ' + (CV.listening ? 'listen' : CV.speaking || CV.working ? 'speak' : '');
   bar.innerHTML = txt ? `<span class="wave"><i></i><i></i><i></i><i></i><i></i></span><b>${txt}</b>${CV.convo ? '<button data-action="coachConvo">Arrêter</button>' : ''}` : '';
 }
 function coachListen(){
+  if(!useNativeSR()) return coachListenServer();
   if(CV.listening){ try{ CV.rec.stop(); }catch(_){} return; }
-  if(!SR){ micHelp(iosInstalled() ? 'installed' : 'unsupported'); stopConvo(); return; }
-  if(iosInstalled()){ micHelp('installed'); stopConvo(); return; }
   try{ speechSynthesis.cancel(); }catch(_){}
   const rec = new SR(); CV.rec = rec; CV.err = null;
   rec.lang = 'fr-FR'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
@@ -9531,7 +9545,6 @@ async function coachMicError(err){
 
 /* ---------- Mode conversation : écoute → réponse à voix haute → écoute ---------- */
 function startConvo(){
-  if(!SR || iosInstalled()){ micHelp(iosInstalled() ? 'installed' : 'unsupported'); return; }
   unlockSpeech();
   CV.convo = true; CV.misses = 0; coachVoiceUI();
   toast('🎧 Conversation activée : parle, le coach te répond');
@@ -9569,6 +9582,154 @@ function coachAfterReply(html){
   CV.voice = false;
   if(!spoken) return;
   speakThen(replyToSpeech(html), () => { if(CV.convo && state.screen === 's-coach') setTimeout(coachListen, 250); });
+}
+
+/* ---------- Coach : écoute par enregistrement (app installée, Firefox…) ---------- */
+async function coachListenServer(){
+  if(REC.busy){ REC.stopFn && REC.stopFn(); return; }
+  try{ speechSynthesis.cancel(); }catch(_){}
+  const text = await listenOnce(st => { CV.listening = st === 'listen'; CV.working = st === 'work'; coachVoiceUI(); if(st === 'listen') buzz(10); });
+  CV.listening = false; CV.working = false; coachVoiceUI();
+  if(text === null){ stopConvo(); return; }
+  if(!text){
+    if(CV.convo && ++CV.misses <= 2){ setTimeout(coachListen, 300); return; }
+    toast('🤫 Je n\'ai rien entendu : touche 🎙️ et parle juste après'); return;
+  }
+  CV.misses = 0; CV.voice = true; coachSay(text);
+}
+function serverVoiceHelp(){
+  openPlus(`<h4>🎙️ Activer la voix dans l'app</h4>
+    <p>Dans l'app installée, c'est ton serveur Cloudflare qui comprend ce que tu dis (Whisper, gratuit). Il faut le mettre à jour <b>une seule fois</b>, en 1 minute :</p>
+    <div class="steps-ins">
+      <p><b>1.</b> Touche <b>Copier le code du serveur</b> ci-dessous.</p>
+      <p><b>2.</b> Ouvre <b>dash.cloudflare.com</b> › <b>Workers & Pages</b> › <b>healthyremake-ai</b> › <b>Edit code</b>.</p>
+      <p><b>3.</b> Sélectionne tout, colle le code copié, puis touche <b>Deploy</b>.</p>
+      <p><b>4.</b> Reviens ici et touche <b>Réessayer</b>.</p>
+    </div>
+    <button class="btn btn-primary" data-action="copyWorker">📋 Copier le code du serveur</button>
+    <a class="btn btn-ghost" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noopener" style="margin-top:10px">☁️ Ouvrir Cloudflare</a>
+    <button class="btn btn-ghost" data-action="micRetry" style="margin-top:10px">🎙️ Réessayer</button>
+    <button class="link-btn" data-action="micKeyboard" style="margin:12px auto 0;display:flex">⌨️ Écrire au coach en attendant</button>`);
+}
+
+/* =====================================================================
+   Voix dans l'app installée (iPhone…) : quand le navigateur n'a pas de
+   reconnaissance vocale, l'app enregistre le micro elle-même et le serveur
+   Cloudflare transcrit avec Whisper (Workers AI).
+   ===================================================================== */
+const useNativeSR = () => !!SR && !iosInstalled();
+const REC = { busy:false, stream:null, ready:null, stopFn:null, level:0 };
+async function serverVoiceReady(force){
+  if(!AI.url) return false;
+  if(REC.ready !== null && !force) return REC.ready;
+  try{
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 5000);
+    const j = await (await fetch(AI.url, { signal:ctrl.signal })).json(); clearTimeout(t);
+    REC.ready = !!(j && j.transcribe);
+  }catch(_){ REC.ready = false; }
+  return REC.ready;
+}
+setTimeout(() => { if(!useNativeSR()) serverVoiceReady(); }, 4000);
+
+// Enregistre jusqu'à la fin de la phrase (silence), puis renvoie un WAV 16 kHz en base64
+async function recordVoice(onState){
+  const stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
+  REC.stream = stream;
+  const AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
+  try{ await ac.resume(); }catch(_){}
+  const src = ac.createMediaStreamSource(stream), an = ac.createAnalyser(); an.fftSize = 1024; src.connect(an);
+  const buf = new Float32Array(an.fftSize);
+  const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', ''].find(m => !m || (window.MediaRecorder && MediaRecorder.isTypeSupported(m)));
+  const mr = new MediaRecorder(stream, mime ? { mimeType:mime } : undefined), chunks = [];
+  mr.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+  const done = new Promise(res => { mr.onstop = res; });
+  mr.start(250);
+  onState && onState('listen');
+  const t0 = performance.now(); let spoke = false, lastVoice = t0, floor = .008;
+  await new Promise(res => {
+    let stopped = false;
+    REC.stopFn = () => { if(!stopped){ stopped = true; res(); } };
+    (function tick(){
+      if(stopped) return;
+      an.getFloatTimeDomainData(buf);
+      let sum = 0; for(let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length), now = performance.now();
+      if(now - t0 < 400) floor = Math.max(floor, rms * 1.6);          // bruit de fond de la pièce
+      REC.level = Math.min(1, rms * 12);
+      const loud = rms > Math.max(.018, floor);
+      if(loud){ spoke = true; lastVoice = now; }
+      if((spoke && now - lastVoice > 1300) || now - t0 > 12000 || (!spoke && now - t0 > 6500)){ stopped = true; return res(); }
+      requestAnimationFrame(tick);
+    })();
+  });
+  REC.stopFn = null;
+  try{ mr.stop(); }catch(_){}
+  await done;
+  stream.getTracks().forEach(t => t.stop()); REC.stream = null;
+  try{ await ac.close(); }catch(_){}
+  if(!spoke) return '';
+  onState && onState('work');
+  const blob = new Blob(chunks, { type:mr.mimeType || mime || 'audio/webm' });
+  return wavBase64(await blob.arrayBuffer());
+}
+async function wavBase64(arr){
+  const AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
+  const audio = await new Promise((ok, ko) => { const p = ac.decodeAudioData(arr, ok, ko); if(p && p.then) p.then(ok, ko); });
+  try{ await ac.close(); }catch(_){}
+  const rate = 16000, len = Math.max(1, Math.ceil(audio.duration * rate));
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, off = new OAC(1, len, rate);
+  const s = off.createBufferSource(); s.buffer = audio; s.connect(off.destination); s.start(0);
+  const pcm = (await off.startRendering()).getChannelData(0);
+  const out = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+  const w = (o, str) => { for(let i = 0; i < str.length; i++) out.setUint8(o + i, str.charCodeAt(i)); };
+  w(0, 'RIFF'); out.setUint32(4, 36 + pcm.length * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true); out.setUint32(24, rate, true);
+  out.setUint32(28, rate * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true); w(36, 'data'); out.setUint32(40, pcm.length * 2, true);
+  for(let i = 0; i < pcm.length; i++){ const v = Math.max(-1, Math.min(1, pcm[i])); out.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7FFF, true); }
+  const bytes = new Uint8Array(out.buffer); let bin = '';
+  for(let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+async function transcribe(b64){
+  const headers = { 'Content-Type':'application/json' }; if(AI.code) headers['X-Access-Code'] = AI.code;
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 25000);
+  let r; try{ r = await fetch(AI.url + '/transcribe', { method:'POST', headers, body:JSON.stringify({ audio:b64 }), signal:ctrl.signal }); } finally{ clearTimeout(t); }
+  const j = await r.json().catch(() => null);
+  if(!j || !j.ok){ if(j && (j.service || ['image', 'json'].includes(j.error))){ REC.ready = false; throw aiErr('old_server', 'serveur'); } throw aiErr(j && j.error || 'server', (j && j.detail) || 'Transcription impossible'); }
+  return String(j.text || '').trim();
+}
+// Une phrase : enregistre puis transcrit. Gère les autorisations et les erreurs.
+async function listenOnce(onState){
+  if(REC.busy){ REC.stopFn && REC.stopFn(); return null; }
+  if(!navigator.mediaDevices || !window.MediaRecorder){ micHelp('unsupported'); return null; }
+  if(!(await serverVoiceReady())){ micHelp('server'); return null; }
+  REC.busy = true;
+  try{
+    const b64 = await recordVoice(onState);
+    if(!b64){ onState && onState(''); return ''; }
+    const text = await transcribe(b64);
+    onState && onState('');
+    return text;
+  }catch(e){
+    onState && onState('');
+    if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) micHelp('denied');
+    else if(e && e.name === 'NotFoundError') toast('🎙️ Aucun micro détecté');
+    else if(e && e.code === 'old_server') micHelp('server');
+    else if(e && e.name === 'AbortError') toast('📶 Le serveur met trop de temps à répondre');
+    else toast('🎙️ ' + ((e && e.message) || 'Micro indisponible'));
+    return null;
+  }finally{
+    REC.busy = false;
+    if(REC.stream){ REC.stream.getTracks().forEach(t => t.stop()); REC.stream = null; }
+  }
+}
+// Copier le nouveau code du serveur (pour la mise à jour en 1 minute)
+async function copyWorkerCode(){
+  try{
+    const code = await (await fetch('serveur-ia/worker.js', { cache:'no-store' })).text();
+    await navigator.clipboard.writeText(code);
+    toast('📋 Code du serveur copié');
+  }catch(_){ window.open('https://github.com/ewenbourges/HealthyRemake-AI-/blob/main/serveur-ia/worker.js', '_blank', 'noopener'); }
 }
 /* /PLUS:JS */
 

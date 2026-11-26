@@ -82,6 +82,7 @@ export default {
     const path = new URL(request.url).pathname.replace(/\/+$/, '');
     if (path.startsWith('/auth') || path === '/reviews') return handleAuth(request, env, path, reply);
     if (path === '/fridge') return handleFridge(request, env, reply);
+    if (path === '/transcribe') return handleTranscribe(request, env, reply);
 
     const ready = !!(env && env.AI);
     const codeOk = !env.ACCESS_CODE || request.headers.get('X-Access-Code') === env.ACCESS_CODE;
@@ -89,7 +90,7 @@ export default {
     // Test de connexion depuis l'app
     if (request.method === 'GET') {
       return reply({ ok: ready, service: 'healthyremake-ai', ready, protected: !!env.ACCESS_CODE, code_ok: codeOk,
-        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), mail: !!(env && env.RESEND_API_KEY), google: !!(env && env.GOOGLE_CLIENT_ID), fridge: true, error: ready ? undefined : 'binding' });
+        models: MODELS.map(m => m.name), accounts: !!(env && env.USERS), mail: !!(env && env.RESEND_API_KEY), google: !!(env && env.GOOGLE_CLIENT_ID), fridge: true, transcribe: true, error: ready ? undefined : 'binding' });
     }
     if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
     if (!ready) return reply({ ok: false, error: 'binding', detail: "Ajoute le binding Workers AI nommé AI dans les réglages du Worker." }, 500);
@@ -475,4 +476,32 @@ async function handleFridge(request, env, reply) {
   const detail = String((last && last.message) || last || 'erreur').slice(0, 200);
   const quota = /limit|quota|neuron|exceed|4006|429|daily/i.test(detail);
   return reply({ ok: false, error: quota ? 'quota' : 'ai', detail: quota ? 'Quota gratuit du jour épuisé, coche tes ingrédients à la main.' : detail }, quota ? 429 : 502);
+}
+
+/* ---------- Voix : transcription d'un enregistrement (Whisper, Workers AI) ----------
+   L'app envoie un WAV 16 kHz mono en base64 (quelques secondes). Utilisé quand le
+   navigateur n'a pas de reconnaissance vocale (app installée sur iPhone, Firefox…). */
+const MAX_AUDIO_CHARS = 3_000_000;   // ≈ 2,2 Mo, soit plus d'une minute de voix
+async function handleTranscribe(request, env, reply) {
+  if (request.method !== 'POST') return reply({ ok: false, error: 'method' }, 405);
+  if (!env.AI) return reply({ ok: false, error: 'binding', detail: 'Ajoute le binding Workers AI nommé AI.' }, 500);
+  if (env.ACCESS_CODE && request.headers.get('X-Access-Code') !== env.ACCESS_CODE) return reply({ ok: false, error: 'code', detail: "Code d'accès manquant ou incorrect." }, 401);
+  let body; try { body = await request.json(); } catch { return reply({ ok: false, error: 'json' }, 400); }
+  const b64 = typeof body.audio === 'string' ? body.audio.replace(/^data:[^,]*,/, '') : '';
+  if (!b64 || b64.length > MAX_AUDIO_CHARS || !/^[A-Za-z0-9+/=]+$/.test(b64)) return reply({ ok: false, error: 'audio', detail: 'Enregistrement absent ou trop long.' }, 400);
+  let last = null;
+  try {   // Whisper large v3 turbo : plus précis, accepte la langue
+    const out = await env.AI.run('@cf/openai/whisper-large-v3-turbo', { audio: b64, language: 'fr' });
+    const text = String((out && (out.text || (out.transcription_info && out.text))) || '').trim();
+    if (out && typeof out.text === 'string') return reply({ ok: true, text: text.slice(0, 500), model: 'whisper-large-v3-turbo' });
+  } catch (e) { last = e; }
+  try {   // Secours : Whisper classique (octets bruts)
+    const bin = atob(b64), bytes = new Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const out = await env.AI.run('@cf/openai/whisper', { audio: bytes });
+    return reply({ ok: true, text: String((out && out.text) || '').trim().slice(0, 500), model: 'whisper' });
+  } catch (e) { last = e; }
+  const detail = String((last && last.message) || last || 'erreur').slice(0, 200);
+  const quota = /limit|quota|neuron|exceed|4006|429|daily/i.test(detail);
+  return reply({ ok: false, error: quota ? 'quota' : 'ai', detail: quota ? 'Quota gratuit du jour épuisé.' : detail }, quota ? 429 : 502);
 }

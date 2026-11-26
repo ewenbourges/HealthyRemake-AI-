@@ -92,8 +92,15 @@ L'utilisateur reçoit un code à 6 chiffres valable 15 minutes. Changer ou réin
 
 « Continuer avec Apple » n'est pas proposé : il exige un compte développeur Apple payant (99 $ par an).
 
+## 11. Parler au coach dans l'app installée
+Safari et Chrome ont leur propre reconnaissance vocale. Ce n'est pas le cas de l'app ajoutée à l'écran d'accueil d'un iPhone (ni de Firefox) : là, l'app enregistre ta phrase et le Worker la transcrit avec **Whisper** (Workers AI, inclus dans l'offre gratuite).
+- Rien à configurer : il suffit que le Worker ait le dernier `worker.js`. Le binding `AI` sert déjà pour l'analyse des photos.
+- Raccourci dans l'app : touche 🎙️ dans le coach. Si le serveur n'est pas à jour, l'app propose **Copier le code du serveur**, puis il ne reste qu'à le coller dans **Edit code** et à faire **Deploy**.
+- L'adresse du Worker doit afficher `"transcribe":true`.
+
 ## Ce que la mise à jour du Worker ajoute aussi
 - **Scan du frigo** (`/fridge`) : l'IA liste les aliments visibles sur la photo, puis l'app propose les recettes faisables. Il utilise le même quota Workers AI que l'analyse des plats.
+- **Transcription de la voix** (`/transcribe`) : Whisper, pour le coach et le mode cuisine dans l'app installée.
 - **Avis publics** (`/reviews`) : les notes et commentaires des membres connectés, stockés dans le même KV `USERS`.
 - Ouvre l'adresse du Worker pour vérifier : la ligne affiche `"accounts":true`, `"mail":true/false`, `"google":true/false`, `"fridge":true`.
 
